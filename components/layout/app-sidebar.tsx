@@ -35,6 +35,7 @@ import {
   ChevronUp,
   CreditCard,
   Tags,
+  Landmark,
 } from "lucide-react";
 
 const mainNavItems = [
@@ -56,6 +57,11 @@ const mainNavItems = [
 ];
 
 const managementNavItems = [
+  {
+    title: "Accounts",
+    url: "/accounts",
+    icon: Landmark,
+  },
   {
     title: "Categories",
     url: "/categories",

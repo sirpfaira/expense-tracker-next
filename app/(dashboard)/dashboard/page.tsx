@@ -59,7 +59,9 @@ export default function DashboardPage() {
               <p className="text-sm font-medium text-muted-foreground">
                 Total Available Balance
               </p>
-              <h3 className="text-2xl font-bold">{formatCurrency(balance)}</h3>
+              <h3 className="text-2xl font-bold">
+                {formatCurrency(balance, "USD")}
+              </h3>
             </div>
           </div>
         </div>
@@ -73,7 +75,7 @@ export default function DashboardPage() {
                 This Month Income
               </p>
               <h3 className="text-2xl font-bold text-green-600">
-                {formatCurrency(totalIncome)}
+                {formatCurrency(totalIncome, "USD")}
               </h3>
             </div>
           </div>
@@ -88,7 +90,7 @@ export default function DashboardPage() {
                 This Month Expenses
               </p>
               <h3 className="text-2xl font-bold text-red-500">
-                {formatCurrency(totalExpenses)}
+                {formatCurrency(totalExpenses, "USD")}
               </h3>
             </div>
           </div>
@@ -116,7 +118,9 @@ export default function DashboardPage() {
                     <p className="text-xs text-muted-foreground">This month</p>
                   </div>
                 </div>
-                <span className="font-medium">{formatCurrency(20000)}</span>
+                <span className="font-medium">
+                  {formatCurrency(20000, "USD")}
+                </span>
               </div>
               <div className="space-y-1">
                 <div className="flex justify-between text-xs text-muted-foreground">
@@ -142,7 +146,9 @@ export default function DashboardPage() {
                     <p className="text-xs text-muted-foreground">This month</p>
                   </div>
                 </div>
-                <span className="font-medium">{formatCurrency(14000)}</span>
+                <span className="font-medium">
+                  {formatCurrency(14000, "USD")}
+                </span>
               </div>
               <div className="space-y-1">
                 <div className="flex justify-between text-xs text-muted-foreground">
@@ -223,7 +229,7 @@ export default function DashboardPage() {
                       }`}
                     >
                       {transaction.type === "income" ? "+" : "-"}
-                      {formatCurrency(transaction.amount)}
+                      {formatCurrency(transaction.amount, "USD")}
                     </span>
                   </div>
                 ))}
