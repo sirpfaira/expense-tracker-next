@@ -14,6 +14,10 @@ import {
   ArrowUpCircle,
   ArrowDownCircle,
   TrendingUp,
+  ArrowUpRight,
+  ArrowDownLeft,
+  ArrowDown,
+  ArrowUp,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -44,84 +48,132 @@ export default function DashboardPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+    return new Date(dateString).toLocaleDateString("en-UK", {
       month: "short",
       day: "numeric",
     });
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-8">
+    <div className="flex flex-col space-y-8 p-6">
+      <div>
         <h1 className="text-2xl font-bold text-foreground">
-          Welcome back, {user?.name?.split(" ")[0]}
+          Welcome Back, {user?.name?.split(" ")[0]}
         </h1>
         <p className="text-muted-foreground">
           Here&apos;s an overview of your finances
         </p>
       </div>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
-            <Wallet className="size-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div
-              className={`text-2xl font-bold ${balance >= 0 ? "text-emerald-600" : "text-red-500"}`}
-            >
-              {formatCurrency(balance)}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="px-6 py-4 bg-card rounded-xl border shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-primary/10 rounded-full text-primary">
+              <Wallet className="h-6 w-6" />
             </div>
-            <p className="text-xs text-muted-foreground">
-              Current account balance
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Income</CardTitle>
-            <ArrowUpCircle className="size-4 text-emerald-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-emerald-600">
-              {formatCurrency(totalIncome)}
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                Total Balance
+              </p>
+              <h3 className="text-2xl font-bold">{formatCurrency(balance)}</h3>
             </div>
-            <p className="text-xs text-muted-foreground">All time income</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Expenses
-            </CardTitle>
-            <ArrowDownCircle className="size-4 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-500">
-              {formatCurrency(totalExpenses)}
+          </div>
+        </div>
+        <div className="px-6 py-4 bg-card rounded-xl border shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-green-500/10 rounded-full text-green-500">
+              <ArrowUp className="h-6 w-6" />
             </div>
-            <p className="text-xs text-muted-foreground">All time expenses</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Transactions</CardTitle>
-            <TrendingUp className="size-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {transactions?.length || 0}
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                This Month Income
+              </p>
+              <h3 className="text-2xl font-bold text-green-600">
+                {formatCurrency(totalIncome)}
+              </h3>
             </div>
-            <p className="text-xs text-muted-foreground">Total transactions</p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+        <div className="px-6 py-4 bg-card rounded-xl border shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-red-500/10 rounded-full text-red-500">
+              <ArrowDown className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                This Month Expenses
+              </p>
+              <h3 className="text-2xl font-bold text-red-500">
+                {formatCurrency(totalExpenses)}
+              </h3>
+            </div>
+          </div>
+        </div>
       </div>
-
       <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <div>
+              <CardTitle>Budget</CardTitle>
+              <CardDescription>
+                Stay on track with your spending goals
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent className="grid gap-3">
+            <div className="p-4 bg-card rounded-xl border shadow-sm space-y-3">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-500/10 rounded-full text-green-500">
+                    <ArrowUp className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Income</p>
+                    <p className="text-xs text-muted-foreground">This month</p>
+                  </div>
+                </div>
+                <span className="font-medium">{formatCurrency(20000)}</span>
+              </div>
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Received</span>
+                  <span>{80}%</span>
+                </div>
+                <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-green-500"
+                    style={{ width: `${80}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="p-4 bg-card rounded-xl border shadow-sm space-y-3">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-red-500/10 rounded-full text-red-500">
+                    <ArrowDown className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Expenses</p>
+                    <p className="text-xs text-muted-foreground">This month</p>
+                  </div>
+                </div>
+                <span className="font-medium">{formatCurrency(14000)}</span>
+              </div>
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Utilized</span>
+                  <span>{60}%</span>
+                </div>
+                <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-red-400"
+                    style={{ width: `${60}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
@@ -145,11 +197,11 @@ export default function DashboardPage() {
                 </Button>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="flex flex-col divide-y divide-muted border-t border-muted">
                 {recentTransactions.map((transaction) => (
                   <div
                     key={transaction.id}
-                    className="flex items-center justify-between"
+                    className="flex items-center justify-between py-2"
                   >
                     <div className="flex items-center gap-3">
                       <div
@@ -160,9 +212,9 @@ export default function DashboardPage() {
                         }`}
                       >
                         {transaction.type === "income" ? (
-                          <ArrowUpCircle className="size-4" />
+                          <ArrowUp className="size-4" />
                         ) : (
-                          <ArrowDownCircle className="size-4" />
+                          <ArrowDown className="size-4" />
                         )}
                       </div>
                       <div>
@@ -191,11 +243,12 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common tasks at your fingertips</CardDescription>
+            <div>
+              <CardTitle>Quick Actions</CardTitle>
+              <CardDescription>Common tasks at your fingertips</CardDescription>
+            </div>
           </CardHeader>
           <CardContent className="grid gap-3">
             <Button
@@ -204,7 +257,7 @@ export default function DashboardPage() {
               asChild
             >
               <Link href="/transactions">
-                <ArrowDownCircle className="size-4 mr-3 text-red-500" />
+                <ArrowDownCircle className="size-6 mr-3 text-red-500" />
                 <div className="text-left">
                   <p className="font-medium">Add Expense</p>
                   <p className="text-xs text-muted-foreground">
@@ -219,7 +272,7 @@ export default function DashboardPage() {
               asChild
             >
               <Link href="/transactions">
-                <ArrowUpCircle className="size-4 mr-3 text-emerald-600" />
+                <ArrowUpCircle className="size-6 mr-3 text-emerald-600" />
                 <div className="text-left">
                   <p className="font-medium">Add Income</p>
                   <p className="text-xs text-muted-foreground">
@@ -234,7 +287,7 @@ export default function DashboardPage() {
               asChild
             >
               <Link href="/reports">
-                <TrendingUp className="size-4 mr-3" />
+                <TrendingUp className="size-6 mr-3" />
                 <div className="text-left">
                   <p className="font-medium">View Reports</p>
                   <p className="text-xs text-muted-foreground">
