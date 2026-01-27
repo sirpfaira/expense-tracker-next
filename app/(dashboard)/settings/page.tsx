@@ -1,0 +1,611 @@
+"use client";
+
+import React from "react";
+import { useState } from "react";
+import { useAuth } from "@/components/providers/auth-provider";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import {
+  Settings,
+  User,
+  LogOut,
+  Shield,
+  Trash2,
+  Loader2,
+  Check,
+  Download,
+  Bell,
+  Palette,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+
+export default function SettingsPage() {
+  const { user, logout, refetchUser } = useAuth();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
+  // Profile state
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileName, setProfileName] = useState(user?.name || "");
+  const [profileEmail, setProfileEmail] = useState(user?.email || "");
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+
+  // Password state
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+
+  // Delete account state
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const handleUpdateProfile = async () => {
+    if (!profileName.trim() || !profileEmail.trim()) {
+      toast.error("Name and email are required");
+      return;
+    }
+
+    setIsUpdatingProfile(true);
+    try {
+      const res = await fetch("/api/auth/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: profileName.trim(),
+          email: profileEmail.trim(),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to update profile");
+      }
+
+      await refetchUser();
+      toast.success("Profile updated successfully");
+      setIsEditingProfile(false);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update profile",
+      );
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error("All password fields are required");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error("New password must be at least 6 characters");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error("New passwords do not match");
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+    try {
+      const res = await fetch("/api/auth/password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to change password");
+      }
+
+      toast.success("Password changed successfully");
+      setIsChangingPassword(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to change password",
+      );
+    } finally {
+      setIsUpdatingPassword(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) {
+      toast.error("Password is required");
+      return;
+    }
+
+    setIsDeletingAccount(true);
+    try {
+      const res = await fetch("/api/auth/profile", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: deletePassword }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to delete account");
+      }
+
+      // Clear all queries and logout
+      queryClient.clear();
+      await logout();
+      toast.success("Account deleted successfully");
+      router.push("/");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete account",
+      );
+    } finally {
+      setIsDeletingAccount(false);
+    }
+  };
+
+  const handleExportData = async () => {
+    try {
+      // Fetch all user data
+      const [transactionsRes, categoriesRes, budgetsRes] = await Promise.all([
+        fetch("/api/transactions"),
+        fetch("/api/categories"),
+        fetch("/api/budgets"),
+      ]);
+
+      const [transactions, categories, budgets] = await Promise.all([
+        transactionsRes.json(),
+        categoriesRes.json(),
+        budgetsRes.json(),
+      ]);
+
+      const exportData = {
+        exportDate: new Date().toISOString(),
+        user: {
+          name: user?.name,
+          email: user?.email,
+        },
+        transactions: transactions.transactions || [],
+        categories: categories.categories || [],
+        budgets: budgets.budgets || [],
+      };
+
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `expense-tracker-export-${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast.success("Data exported successfully");
+    } catch {
+      toast.error("Failed to export data");
+    }
+  };
+
+  return (
+    <div className="p-6 max-w-3xl space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+        <p className="text-muted-foreground">
+          Manage your account and preferences
+        </p>
+      </div>
+
+      {/* Profile Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="size-5" />
+            Profile
+          </CardTitle>
+          <CardDescription>Your personal information</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center gap-4">
+            <Avatar className="size-16">
+              <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                {user?.name ? getInitials(user.name) : "U"}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-semibold text-foreground">{user?.name}</p>
+              <p className="text-sm text-muted-foreground">{user?.email}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Member since{" "}
+                {user?.createdAt
+                  ? new Date(user.createdAt).toLocaleDateString()
+                  : "N/A"}
+              </p>
+            </div>
+          </div>
+
+          <Separator />
+
+          {isEditingProfile ? (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  value={profileName}
+                  onChange={(e) => setProfileName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={profileEmail}
+                  onChange={(e) => setProfileEmail(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleUpdateProfile}
+                  disabled={isUpdatingProfile}
+                >
+                  {isUpdatingProfile ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Check className="size-4" />
+                  )}
+                  Save Changes
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditingProfile(false);
+                    setProfileName(user?.name || "");
+                    setProfileEmail(user?.email || "");
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <Label className="text-muted-foreground">Name</Label>
+                  <p className="font-medium">{user?.name}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Email</Label>
+                  <p className="font-medium">{user?.email}</p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setIsEditingProfile(true)}
+              >
+                Edit Profile
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Security Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="size-5" />
+            Security
+          </CardTitle>
+          <CardDescription>
+            Manage your password and security settings
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">Password</p>
+              <p className="text-sm text-muted-foreground">
+                Change your account password
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => setIsChangingPassword(true)}
+            >
+              Change Password
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Preferences Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="size-5" />
+            Preferences
+          </CardTitle>
+          <CardDescription>Customize your experience</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Bell className="size-5 text-muted-foreground" />
+              <div>
+                <p className="font-medium">Notifications</p>
+                <p className="text-sm text-muted-foreground">
+                  Email alerts and reminders
+                </p>
+              </div>
+            </div>
+            <Badge variant="secondary">Coming Soon</Badge>
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Palette className="size-5 text-muted-foreground" />
+              <div>
+                <p className="font-medium">Theme</p>
+                <p className="text-sm text-muted-foreground">
+                  Customize the app appearance
+                </p>
+              </div>
+            </div>
+            <Badge variant="secondary">Coming Soon</Badge>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Data Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Download className="size-5" />
+            Data
+          </CardTitle>
+          <CardDescription>Export and manage your data</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">Export Data</p>
+              <p className="text-sm text-muted-foreground">
+                Download all your transactions, categories, and budgets
+              </p>
+            </div>
+            <Button variant="outline" onClick={handleExportData}>
+              <Download className="size-4" />
+              Export
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Danger Zone */}
+      <Card className="border-destructive/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-destructive">
+            <Trash2 className="size-5" />
+            Danger Zone
+          </CardTitle>
+          <CardDescription>
+            Irreversible actions that affect your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">Sign Out</p>
+              <p className="text-sm text-muted-foreground">
+                Sign out from this device
+              </p>
+            </div>
+            <Button variant="outline" onClick={() => logout()}>
+              <LogOut className="size-4" />
+              Sign Out
+            </Button>
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium text-destructive">Delete Account</p>
+              <p className="text-sm text-muted-foreground">
+                Permanently delete your account and all data
+              </p>
+            </div>
+            <Button
+              variant="destructive"
+              onClick={() => setIsDeleteDialogOpen(true)}
+            >
+              <Trash2 className="size-4" />
+              Delete Account
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Change Password Dialog */}
+      <Dialog open={isChangingPassword} onOpenChange={setIsChangingPassword}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Password</DialogTitle>
+            <DialogDescription>
+              Enter your current password and choose a new one
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="current-password">Current Password</Label>
+              <Input
+                id="current-password"
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-password">New Password</Label>
+              <Input
+                id="new-password"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirm New Password</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsChangingPassword(false);
+                setCurrentPassword("");
+                setNewPassword("");
+                setConfirmPassword("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleChangePassword}
+              disabled={isUpdatingPassword}
+            >
+              {isUpdatingPassword && (
+                <Loader2 className="size-4 animate-spin" />
+              )}
+              Change Password
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Account Dialog */}
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your
+              account and remove all your data including transactions,
+              categories, and budgets.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="delete-password">
+              Enter your password to confirm
+            </Label>
+            <Input
+              id="delete-password"
+              type="password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              placeholder="Your password"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeletePassword("")}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              className="bg-destructive text-white hover:bg-destructive/90"
+              disabled={isDeletingAccount}
+            >
+              {isDeletingAccount ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                "Delete Account"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
+
+function Badge({
+  children,
+  variant,
+}: {
+  children: React.ReactNode;
+  variant: string;
+}) {
+  return (
+    <span
+      className={`px-2 py-1 text-xs rounded-full ${
+        variant === "secondary" ? "bg-muted text-muted-foreground" : ""
+      }`}
+    >
+      {children}
+    </span>
+  );
+}
