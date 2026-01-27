@@ -17,13 +17,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Loader2,
-  Plus,
-  ArrowUpCircle,
-  ArrowDownCircle,
-  Wallet,
-} from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { TransactionForm } from "@/components/transactions/transaction-form";
 import { TransactionsList } from "@/components/transactions/transactions-list";
 import {
@@ -57,31 +51,12 @@ export default function TransactionsPage() {
     }
   };
 
-  const totalIncome =
-    transactions
-      ?.filter((t) => t.type === "income")
-      .reduce((sum, t) => sum + t.amount, 0) || 0;
-
-  const totalExpenses =
-    transactions
-      ?.filter((t) => t.type === "expense")
-      .reduce((sum, t) => sum + t.amount, 0) || 0;
-
-  const balance = totalIncome - totalExpenses;
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
-
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Transactions</h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Manage your income and expenses
           </p>
         </div>
@@ -89,7 +64,7 @@ export default function TransactionsPage() {
           <DialogTrigger asChild>
             <Button>
               <Plus className="size-4" />
-              Add Transaction
+              <span className="hidden md:inline-block">Add Transaction</span>
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -107,55 +82,6 @@ export default function TransactionsPage() {
           </DialogContent>
         </Dialog>
       </div>
-
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-2">
-              <ArrowUpCircle className="size-4 text-emerald-600" />
-              Total Income
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-emerald-600">
-              {formatCurrency(totalIncome)}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-2">
-              <ArrowDownCircle className="size-4 text-red-500" />
-              Total Expenses
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-red-500">
-              {formatCurrency(totalExpenses)}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-2">
-              <Wallet className="size-4" />
-              Balance
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p
-              className={`text-2xl font-bold ${
-                balance >= 0 ? "text-emerald-600" : "text-red-500"
-              }`}
-            >
-              {formatCurrency(balance)}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>All Transactions</CardTitle>

@@ -40,7 +40,10 @@ import {
   Trash2,
   ArrowUpCircle,
   ArrowDownCircle,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { TransactionForm } from "./transaction-form";
 import {
   TransactionResponse,
@@ -53,12 +56,14 @@ import {
   useDeleteTransaction,
 } from "@/hooks/use-transactions";
 import { toast } from "sonner";
+import { formatDate } from "@/lib/utils";
 
 interface TransactionsListProps {
   transactions: TransactionResponse[];
 }
 
 export function TransactionsList({ transactions }: TransactionsListProps) {
+  const isMobile = useIsMobile();
   const [editingTransaction, setEditingTransaction] =
     useState<TransactionResponse | null>(null);
   const [deletingTransaction, setDeletingTransaction] =
@@ -104,14 +109,6 @@ export function TransactionsList({ transactions }: TransactionsListProps) {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
   const formatAmount = (amount: number, type: TransactionType) => {
     const formatted = new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -136,77 +133,142 @@ export function TransactionsList({ transactions }: TransactionsListProps) {
 
   return (
     <>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Date</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead className="text-right">Amount</TableHead>
-            <TableHead className="w-12.5"></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
+      {isMobile ? (
+        <div className="flex flex-col divide-y divide-muted border-y border-muted">
           {transactions.map((transaction) => (
-            <TableRow key={transaction.id}>
-              <TableCell className="font-medium">
-                {formatDate(transaction.date)}
-              </TableCell>
-              <TableCell>{transaction.description}</TableCell>
-              <TableCell>
-                <Badge variant="secondary">
-                  {CATEGORY_LABELS[transaction.category]}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-1.5">
-                  {transaction.type === "income" ? (
-                    <ArrowUpCircle className="w-4 h-4 text-emerald-600" />
-                  ) : (
-                    <ArrowDownCircle className="w-4 h-4 text-red-500" />
-                  )}
-                  <span className="capitalize">{transaction.type}</span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div
+                  key={transaction.id}
+                  className="flex items-center justify-between py-2"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`flex items-center justify-center size-9 rounded-full ${
+                        transaction.type === "income"
+                          ? "bg-emerald-100 text-emerald-600"
+                          : "bg-red-100 text-red-500"
+                      }`}
+                    >
+                      {transaction.type === "income" ? (
+                        <ArrowUp className="size-4" />
+                      ) : (
+                        <ArrowDown className="size-4" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">
+                        {transaction.description}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        <span> {formatDate(transaction.date)}</span>
+                        <span> - </span>
+                        <span className="capitalize">
+                          {transaction.category}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                  <span
+                    className={`font-medium text-sm ${
+                      transaction.type === "income"
+                        ? "text-emerald-600"
+                        : "text-red-500"
+                    }`}
+                  >
+                    {formatAmount(transaction.amount, transaction.type)}
+                  </span>
                 </div>
-              </TableCell>
-              <TableCell
-                className={`text-right font-medium ${
-                  transaction.type === "income"
-                    ? "text-emerald-600"
-                    : "text-red-500"
-                }`}
-              >
-                {formatAmount(transaction.amount, transaction.type)}
-              </TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreHorizontal className="h-4 w-4" />
-                      <span className="sr-only">Open menu</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={() => setEditingTransaction(transaction)}
-                    >
-                      <Pencil className="w-4 h-4" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onClick={() => setDeletingTransaction(transaction)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => setEditingTransaction(transaction)}
+                >
+                  <Pencil className="w-4 h-4" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => setDeletingTransaction(transaction)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ))}
-        </TableBody>
-      </Table>
+        </div>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Date</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead className="text-right">Amount</TableHead>
+              <TableHead className="w-12.5"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {transactions.map((transaction) => (
+              <TableRow key={transaction.id}>
+                <TableCell>{formatDate(transaction.date)}</TableCell>
+                <TableCell>{transaction.description}</TableCell>
+                <TableCell>
+                  <Badge variant="secondary">
+                    {CATEGORY_LABELS[transaction.category]}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1.5">
+                    {transaction.type === "income" ? (
+                      <ArrowUpCircle className="w-4 h-4 text-emerald-600" />
+                    ) : (
+                      <ArrowDownCircle className="w-4 h-4 text-red-500" />
+                    )}
+                    <span className="capitalize">{transaction.type}</span>
+                  </div>
+                </TableCell>
+                <TableCell
+                  className={`text-right font-medium ${
+                    transaction.type === "income"
+                      ? "text-emerald-600"
+                      : "text-red-500"
+                  }`}
+                >
+                  {formatAmount(transaction.amount, transaction.type)}
+                </TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Open menu</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => setEditingTransaction(transaction)}
+                      >
+                        <Pencil className="w-4 h-4" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => setDeletingTransaction(transaction)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
 
       {/* Edit Dialog */}
       <Dialog

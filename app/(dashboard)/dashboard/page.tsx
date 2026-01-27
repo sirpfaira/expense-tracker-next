@@ -14,13 +14,12 @@ import {
   ArrowUpCircle,
   ArrowDownCircle,
   TrendingUp,
-  ArrowUpRight,
-  ArrowDownLeft,
   ArrowDown,
   ArrowUp,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { formatCurrency, formatDate } from "@/lib/utils";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -40,20 +39,6 @@ export default function DashboardPage() {
 
   const recentTransactions = transactions?.slice(0, 5) || [];
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-UK", {
-      month: "short",
-      day: "numeric",
-    });
-  };
-
   return (
     <div className="flex flex-col space-y-8 p-6">
       <div>
@@ -67,12 +52,12 @@ export default function DashboardPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <div className="px-6 py-4 bg-card rounded-xl border shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-primary/10 rounded-full text-primary">
+            <div className="p-3 bg-muted-foreground/10 rounded-full text-sidebar-foreground/90">
               <Wallet className="h-6 w-6" />
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">
-                Total Balance
+                Total Available Balance
               </p>
               <h3 className="text-2xl font-bold">{formatCurrency(balance)}</h3>
             </div>
@@ -197,7 +182,7 @@ export default function DashboardPage() {
                 </Button>
               </div>
             ) : (
-              <div className="flex flex-col divide-y divide-muted border-t border-muted">
+              <div className="flex flex-col divide-y divide-muted border-y border-muted">
                 {recentTransactions.map((transaction) => (
                   <div
                     key={transaction.id}
@@ -222,8 +207,11 @@ export default function DashboardPage() {
                           {transaction.description}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {transaction.category} -{" "}
-                          {formatDate(transaction.date)}
+                          <span> {formatDate(transaction.date, "SHORT")}</span>
+                          <span> - </span>
+                          <span className="capitalize">
+                            {transaction.category}
+                          </span>
                         </p>
                       </div>
                     </div>
