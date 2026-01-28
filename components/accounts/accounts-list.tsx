@@ -20,16 +20,21 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ArrowDownCircle, CreditCard, Banknote, PiggyBank } from "lucide-react";
 import { AccountForm } from "./account-form";
-import { AccountResponse, AccountFormValues } from "@/lib/models/account";
+import {
+  AccountResponse,
+  AccountFormValues,
+  AccountCurrency,
+} from "@/lib/models/account";
 import { useUpdateAccount, useDeleteAccount } from "@/hooks/use-accounts";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 
 interface AccountsListProps {
   accounts: AccountResponse[];
+  currency: AccountCurrency;
 }
 
-export function AccountsList({ accounts }: AccountsListProps) {
+export function AccountsList({ accounts, currency }: AccountsListProps) {
   const [editingAccount, setEditingAccount] = useState<AccountResponse | null>(
     null,
   );
@@ -88,7 +93,11 @@ export function AccountsList({ accounts }: AccountsListProps) {
     <>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {accounts.map((account) => (
-          <AccountCard key={account.name} account={account} />
+          <AccountCard
+            key={account.name}
+            account={account}
+            currency={currency}
+          />
         ))}
         {accounts.length === 0 && (
           <div className="col-span-full text-center p-8 text-muted-foreground border border-dashed rounded-lg">
@@ -147,6 +156,7 @@ export function AccountsList({ accounts }: AccountsListProps) {
 
 interface AccountCardProps {
   account: AccountResponse;
+  currency: AccountCurrency;
 }
 
 const iconMap = {
@@ -155,17 +165,18 @@ const iconMap = {
   savings: PiggyBank,
 };
 
-export function AccountCard({ account }: AccountCardProps) {
+export function AccountCard({ account, currency }: AccountCardProps) {
   const Icon = iconMap[account.type] || CreditCard;
 
   return (
     <div className="p-6 bg-card rounded-xl border shadow-sm flex items-center justify-between">
       <div className="flex items-center gap-4">
         <div className="p-3 bg-primary/10 rounded-full text-primary">
-          <Icon className="h-6 w-6" />
+          <Icon className="h-10 w-10" />
         </div>
         <div>
-          <h3 className="font-semibold">{account.name}</h3>
+          <h3 className="font-medium">{account.name}</h3>
+          <p className="text-sm text-muted-foreground">{account.shortCode}</p>
           <p className="flex space-x-1 text-sm text-muted-foreground">
             <span className="capitalize">{account.type.toLowerCase()}</span>
             <span>•</span>
@@ -175,7 +186,7 @@ export function AccountCard({ account }: AccountCardProps) {
       </div>
       <div className="text-right">
         <p className="font-bold text-lg">
-          {formatCurrency(account.balance, account.currency)}
+          {formatCurrency(account.balance, currency)}
         </p>
       </div>
     </div>

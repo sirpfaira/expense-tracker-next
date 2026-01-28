@@ -23,8 +23,11 @@ import { AccountsList } from "@/components/accounts/accounts-list";
 import { useAccounts, useCreateAccount } from "@/hooks/use-accounts";
 import { AccountFormValues } from "@/lib/models/account";
 import { toast } from "sonner";
+import { useAuth } from "@/components/providers/auth-provider";
+import LoadingIndicator from "@/components/layout/loading-indicator";
 
 export default function AccountsPage() {
+  const { user } = useAuth();
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
   const createMutation = useCreateAccount();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -42,51 +45,67 @@ export default function AccountsPage() {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Accounts</h1>
-          <p className="text-muted-foreground text-sm">
-            Manage your income and expenses
-          </p>
-        </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="size-4" />
-              <span className="hidden md:inline-block">Add Account</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Account</DialogTitle>
-              <DialogDescription>
-                Enter the details for your new account.
-              </DialogDescription>
-            </DialogHeader>
-            <AccountForm
-              onSubmit={handleCreate}
-              onCancel={() => setIsCreateDialogOpen(false)}
-              isLoading={createMutation.isPending}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>All Accounts</CardTitle>
-          <CardDescription>View and manage all your accounts</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {accountsLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="size-8 animate-spin text-muted-foreground" />
+    <>
+      {user && accounts ? (
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Accounts</h1>
+              <p className="text-muted-foreground text-sm">
+                Manage your income and expenses
+              </p>
             </div>
-          ) : (
-            <AccountsList accounts={accounts || []} />
-          )}
-        </CardContent>
-      </Card>
-    </div>
+            {user.role === "admin" && (
+              <Dialog
+                open={isCreateDialogOpen}
+                onOpenChange={setIsCreateDialogOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="size-4" />
+                    <span className="hidden md:inline-block">Add Account</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add Account</DialogTitle>
+                    <DialogDescription>
+                      Enter the details for your new account.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <AccountForm
+                    onSubmit={handleCreate}
+                    onCancel={() => setIsCreateDialogOpen(false)}
+                    isLoading={createMutation.isPending}
+                  />
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>All Accounts</CardTitle>
+              <CardDescription>
+                View and manage all your accounts
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {accountsLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="size-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                <AccountsList
+                  accounts={accounts || []}
+                  currency={user.currency}
+                />
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        <LoadingIndicator />
+      )}
+    </>
   );
 }

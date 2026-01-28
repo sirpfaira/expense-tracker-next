@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
         email: email.toLowerCase().trim(),
         password: hashedPassword,
         role: "admin",
+        currency: "usd",
       });
     } else {
       // Check if user already exists
@@ -50,6 +51,7 @@ export async function POST(request: NextRequest) {
         email: email.toLowerCase().trim(),
         password: hashedPassword,
         role: "user",
+        currency: "usd",
       });
     }
 
@@ -59,6 +61,7 @@ export async function POST(request: NextRequest) {
       email: email.toLowerCase().trim(),
       password: hashedPassword,
       role: isEmpty ? "admin" : "user",
+      currency: "usd",
     };
 
     // Create and set auth token

@@ -26,12 +26,14 @@ export interface User {
   password: string;
   name: string;
   role: string;
+  currency: "usd" | "zar";
 }
 
 export interface UserResponse {
   id: string;
   name: string;
   role: string;
+  currency: "usd" | "zar";
 }
 
 export function sanitizeUser(user: User): UserResponse {
@@ -39,5 +41,6 @@ export function sanitizeUser(user: User): UserResponse {
     id: user._id!.toString(),
     name: user.name,
     role: user.role,
+    currency: user.currency,
   };
 }
