@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -17,24 +16,33 @@ import {
 } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Loader2, Wallet } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginSchema, LoginValues } from "@/lib/models/user";
 
 export default function LoginPage() {
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema),
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: LoginValues) => {
     setIsLoading(true);
-
     try {
-      await login(formData.email, formData.password);
+      await login(data);
       toast.success("Welcome back!");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Login failed");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Login failed. Please try again later!",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -54,7 +62,6 @@ export default function LoginPage() {
             Manage your finances with ease
           </p>
         </div>
-
         <Card>
           <CardHeader>
             <CardTitle>Sign in</CardTitle>
@@ -62,38 +69,36 @@ export default function LoginPage() {
               Enter your credentials to access your account
             </CardDescription>
           </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <CardContent className="space-y-4 mt-3">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  required
-                  disabled={isLoading}
+                  placeholder="m@example.com"
+                  {...register("email")}
                 />
+                {errors.email && (
+                  <span className="text-sm text-destructive">
+                    {errors.email.message}
+                  </span>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Enter your password"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                  required
-                  disabled={isLoading}
+                  {...register("password")}
                 />
+                {errors.password && (
+                  <span className="text-sm text-destructive">
+                    {errors.password.message}
+                  </span>
+                )}
               </div>
             </CardContent>
-            <CardFooter className="flex flex-col gap-4">
+            <CardFooter className="flex flex-col gap-4 mt-6">
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (
                   <>

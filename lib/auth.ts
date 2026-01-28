@@ -5,11 +5,11 @@ import { ObjectId } from "mongodb";
 import { User, sanitizeUser, UserResponse } from "./models/user";
 
 const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "fallback-secret-change-in-production"
+  process.env.JWT_SECRET || "fallback-secret-change-in-production",
 );
 
 const TOKEN_NAME = "auth_token";
-const TOKEN_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
+const TOKEN_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 
 export async function hashPassword(password: string): Promise<string> {
   const encoder = new TextEncoder();
@@ -21,7 +21,7 @@ export async function hashPassword(password: string): Promise<string> {
 
 export async function verifyPassword(
   password: string,
-  hashedPassword: string
+  hashedPassword: string,
 ): Promise<boolean> {
   const hash = await hashPassword(password);
   return hash === hashedPassword;
@@ -38,7 +38,7 @@ export async function createToken(userId: string): Promise<string> {
 }
 
 export async function verifyToken(
-  token: string
+  token: string,
 ): Promise<{ userId: string } | null> {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET);

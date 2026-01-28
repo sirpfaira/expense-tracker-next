@@ -57,7 +57,6 @@ export async function PUT(request: Request) {
       {
         $set: {
           password: hashedPassword,
-          updatedAt: new Date(),
         },
       },
     );

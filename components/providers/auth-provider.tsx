@@ -14,15 +14,15 @@ import {
   UseMutateFunction,
 } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { UserResponse } from "@/lib/models/user";
+import { LoginValues, RegisterValues, UserResponse } from "@/lib/models/user";
 
 interface AuthContextType {
   user: UserResponse | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   refetchUser: UseMutateFunction<UserResponse | null, Error, void, unknown>;
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  login: (data: LoginValues) => Promise<void>;
+  registerUser: (data: RegisterValues) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -35,14 +35,11 @@ async function fetchCurrentUser(): Promise<UserResponse | null> {
   return data.user;
 }
 
-async function loginRequest(
-  email: string,
-  password: string,
-): Promise<UserResponse> {
+async function loginRequest(data: LoginValues): Promise<UserResponse> {
   const res = await fetch("/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify(data),
   });
 
   if (!res.ok) {
@@ -50,19 +47,15 @@ async function loginRequest(
     throw new Error(error.error || "Login failed");
   }
 
-  const data = await res.json();
-  return data.user;
+  const payload = await res.json();
+  return payload.user;
 }
 
-async function registerRequest(
-  name: string,
-  email: string,
-  password: string,
-): Promise<UserResponse> {
+async function registerRequest(data: RegisterValues): Promise<UserResponse> {
   const res = await fetch("/api/auth/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, email, password }),
+    body: JSON.stringify(data),
   });
 
   if (!res.ok) {
@@ -70,8 +63,8 @@ async function registerRequest(
     throw new Error(error.error || "Registration failed");
   }
 
-  const data = await res.json();
-  return data.user;
+  const payload = await res.json();
+  return payload.user;
 }
 
 async function logoutRequest(): Promise<void> {
@@ -96,8 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const loginMutation = useMutation({
-    mutationFn: ({ email, password }: { email: string; password: string }) =>
-      loginRequest(email, password),
+    mutationFn: (data: LoginValues) => loginRequest(data),
     onSuccess: (user) => {
       queryClient.setQueryData(["auth", "user"], user);
       router.push("/dashboard");
@@ -105,15 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const registerMutation = useMutation({
-    mutationFn: ({
-      name,
-      email,
-      password,
-    }: {
-      name: string;
-      email: string;
-      password: string;
-    }) => registerRequest(name, email, password),
+    mutationFn: (data: RegisterValues) => registerRequest(data),
     onSuccess: (user) => {
       queryClient.setQueryData(["auth", "user"], user);
       router.push("/dashboard");
@@ -130,15 +114,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const login = useCallback(
-    async (email: string, password: string) => {
-      await loginMutation.mutateAsync({ email, password });
+    async (data: LoginValues) => {
+      await loginMutation.mutateAsync(data);
     },
     [loginMutation],
   );
 
-  const register = useCallback(
-    async (name: string, email: string, password: string) => {
-      await registerMutation.mutateAsync({ name, email, password });
+  const registerUser = useCallback(
+    async (data: RegisterValues) => {
+      await registerMutation.mutateAsync(data);
     },
     [registerMutation],
   );
@@ -154,10 +138,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: !!user,
       refetchUser,
       login,
-      register,
+      registerUser,
       logout,
     }),
-    [user, isLoading, login, register, logout],
+    [user, isLoading, login, registerUser, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

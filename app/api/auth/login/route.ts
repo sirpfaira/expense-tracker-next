@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDatabase } from "@/lib/mongodb";
 import { verifyPassword, createToken, setAuthCookie } from "@/lib/auth";
-import { User, sanitizeUser } from "@/lib/models/user";
-import { z } from "zod";
-
-const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(1, "Password is required"),
-});
+import { User, loginSchema, sanitizeUser } from "@/lib/models/user";
 
 export async function POST(request: NextRequest) {
   try {

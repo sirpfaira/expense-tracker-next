@@ -121,13 +121,15 @@ export async function DELETE(
       _id: new ObjectId(id),
     });
     if (account) {
-      await db.collection<Account>("accounts").deleteOne({
-        _id: new ObjectId(id),
-      });
-      // Delete transactions of the account
-      await db.collection("transactions").deleteMany({
-        account: account.shortCode,
-      });
+      await Promise.all([
+        db.collection<Account>("accounts").deleteOne({
+          _id: new ObjectId(id),
+        }),
+        db.collection("transactions").deleteMany({
+          account: account.shortCode,
+        }),
+      ]);
+
       return NextResponse.json({ message: "Account deleted successfully" });
     } else {
       return NextResponse.json({ error: "Account not found" }, { status: 404 });

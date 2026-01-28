@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDatabase } from "@/lib/mongodb";
 import { hashPassword, createToken, setAuthCookie } from "@/lib/auth";
-import { User, sanitizeUser } from "@/lib/models/user";
-import { z } from "zod";
-
-const registerSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
+import { User, registerSchema, sanitizeUser } from "@/lib/models/user";
+import { InsertOneResult } from "mongodb";
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,38 +17,48 @@ export async function POST(request: NextRequest) {
     }
 
     const { name, email, password } = validation.data;
-
     const db = await getDatabase();
     const usersCollection = db.collection<User>("users");
 
-    // Check if user already exists
-    const existingUser = await usersCollection.findOne({ email });
-    if (existingUser) {
-      return NextResponse.json(
-        { error: "User with this email already exists" },
-        { status: 400 },
-      );
-    }
-
-    // Hash password and create user
+    // Hash password
     const hashedPassword = await hashPassword(password);
-    const now = new Date();
 
-    const result = await usersCollection.insertOne({
-      name,
-      email,
-      password: hashedPassword,
-      createdAt: now,
-      updatedAt: now,
-    });
+    // Check if collection is empty
+    const count = await usersCollection.countDocuments({});
+    const isEmpty = count === 0;
+    let result: InsertOneResult<User>;
+
+    if (isEmpty) {
+      result = await usersCollection.insertOne({
+        name,
+        email: email.toLowerCase().trim(),
+        password: hashedPassword,
+        role: "admin",
+      });
+    } else {
+      // Check if user already exists
+      const existingUser = await usersCollection.findOne({ email });
+      if (existingUser) {
+        return NextResponse.json(
+          { error: "User with this email already exists" },
+          { status: 400 },
+        );
+      }
+
+      result = await usersCollection.insertOne({
+        name,
+        email: email.toLowerCase().trim(),
+        password: hashedPassword,
+        role: "user",
+      });
+    }
 
     const user: User = {
       _id: result.insertedId,
       name,
-      email,
+      email: email.toLowerCase().trim(),
       password: hashedPassword,
-      createdAt: now,
-      updatedAt: now,
+      role: isEmpty ? "admin" : "user",
     };
 
     // Create and set auth token

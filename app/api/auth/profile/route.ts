@@ -9,37 +9,33 @@ export async function PUT(request: Request) {
     const user = await requireAuth();
     const body = await request.json();
 
-    const { name, email } = body;
+    const { name } = body;
 
-    if (!name || !email) {
-      return NextResponse.json(
-        { error: "Name and email are required" },
-        { status: 400 },
-      );
+    if (!name) {
+      return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
 
     const db = await getDatabase();
 
-    // Check if email is already taken by another user
-    const existingUser = await db.collection<User>("users").findOne({
-      email: email.toLowerCase(),
-      _id: { $ne: new ObjectId(user.id) },
-    });
+    // Check if email is already taken by another user except the current user
+    // const existingUser = await db.collection<User>("users").findOne({
+    //   email: email.toLowerCase(),
+    //   _id: { $ne: new ObjectId(user.id) },
+    // });
 
-    if (existingUser) {
-      return NextResponse.json(
-        { error: "Email is already in use" },
-        { status: 400 },
-      );
-    }
+    // if (existingUser) {
+    //   return NextResponse.json(
+    //     { error: "Email is already in use" },
+    //     { status: 400 },
+    //   );
+    // }
 
     const result = await db.collection<User>("users").findOneAndUpdate(
       { _id: new ObjectId(user.id) },
       {
         $set: {
           name: name.trim(),
-          email: email.toLowerCase().trim(),
-          updatedAt: new Date(),
+          // email: email.toLowerCase().trim(),
         },
       },
       { returnDocument: "after" },
@@ -98,22 +94,22 @@ export async function DELETE(request: Request) {
 
     // Delete all user data
     await Promise.all([
-      db
-        .collection("transactions")
-        .deleteMany({ userId: new ObjectId(user.id) }),
-      db.collection("categories").deleteMany({ userId: new ObjectId(user.id) }),
-      db.collection("budgets").deleteMany({ userId: new ObjectId(user.id) }),
+      // db
+      //   .collection("transactions")
+      //   .deleteMany({ userId: new ObjectId(user.id) }),
+      // db.collection("categories").deleteMany({ userId: new ObjectId(user.id) }),
+      // db.collection("budgets").deleteMany({ userId: new ObjectId(user.id) }),
       db.collection<User>("users").deleteOne({ _id: new ObjectId(user.id) }),
     ]);
 
-    return NextResponse.json({ message: "Account deleted successfully" });
+    return NextResponse.json({ message: "User account deleted successfully" });
   } catch (error) {
     if (error instanceof Error && error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     console.error("Delete account error:", error);
     return NextResponse.json(
-      { error: "Failed to delete account" },
+      { error: "Failed to delete user account" },
       { status: 500 },
     );
   }
