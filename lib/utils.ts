@@ -1,12 +1,13 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { AccountCurrency, AccountType } from "./models/account";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const formatCurrency = (amount: number, currency: "ZAR" | "USD") => {
-  if (currency === "ZAR") {
+export const formatCurrency = (amount: number, currency: AccountCurrency) => {
+  if (currency === "zar") {
     return new Intl.NumberFormat("en-ZA", {
       style: "currency",
       currency: "ZAR",

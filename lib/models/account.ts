@@ -2,21 +2,60 @@ import { ObjectId } from "mongodb";
 import { z } from "zod";
 
 export const accountSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  shortCode: z.string().optional(),
-  type: z.enum(["BANK", "CASH", "SAVINGS"]),
-  currency: z.enum(["ZAR", "USD"]),
+  name: z.string().min(3, "Name must be at least 3 characters"),
+  shortCode: z
+    .string()
+    .min(3, "3+ chars required")
+    .max(8, "Max 8 chars")
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      "Short code can only contain letters, numbers, and underscores",
+    ),
+  type: z.enum(["bank", "cash", "savings"]),
+  currency: z.enum(["zar", "usd"]),
+  balance: z.coerce.number().min(0, "Balance must be a positive number"),
   showInReports: z.boolean(),
+  // showInReports: z.boolean().refine((val) => val === true, {
+  //   message: "Turn on for account to be included in reports",
+  // }),
 });
 
 export type AccountFormValues = z.infer<typeof accountSchema>;
 
+export type AccountType = "bank" | "cash" | "savings";
+export type AccountCurrency = "zar" | "usd";
+
 export interface Account {
-  _id?: ObjectId | string;
+  _id?: ObjectId;
   name: string;
   shortCode: string;
-  type: "BANK" | "CASH";
-  currency: "ZAR" | "USD";
+  type: AccountType;
+  currency: AccountCurrency;
   balance: number;
   showInReports: boolean;
 }
+
+export interface AccountResponse {
+  id: string;
+  name: string;
+  shortCode: string;
+  type: AccountType;
+  currency: AccountCurrency;
+  balance: number;
+  showInReports: boolean;
+}
+
+export function sanitizeAccount(account: Account): AccountResponse {
+  return {
+    id: account._id!.toString(),
+    name: account.name,
+    shortCode: account.shortCode,
+    type: account.type,
+    currency: account.currency,
+    balance: account.balance,
+    showInReports: account.showInReports,
+  };
+}
+
+export const ACCOUNT_TYPES: AccountType[] = ["bank", "cash", "savings"];
+export const ACCOUNT_CURRENCIES: AccountCurrency[] = ["zar", "usd"];

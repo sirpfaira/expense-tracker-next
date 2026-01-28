@@ -1,41 +1,92 @@
-import { CreateAccountDialog } from "@/components/accounts/create-account-dialog";
-import { AccountCard } from "@/components/accounts/account-card";
-import { Account } from "@/lib/models/account";
+"use client";
 
-export default async function AccountsPage() {
-  //   const { data: accounts, isLoading:  accountsLoading } =
-  //      useAccounts();
-  const accounts: Account[] = [
-    {
-      _id: "dgdgsghshhssjjasa",
-      name: "Bidvest",
-      shortCode: "BIDV",
-      type: "BANK",
-      currency: "ZAR",
-      balance: 23000,
-      showInReports: true,
-    },
-  ];
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Loader2, Plus } from "lucide-react";
+import { AccountForm } from "@/components/accounts/account-form";
+import { AccountsList } from "@/components/accounts/accounts-list";
+import { useAccounts, useCreateAccount } from "@/hooks/use-accounts";
+import { AccountFormValues } from "@/lib/models/account";
+import { toast } from "sonner";
+
+export default function AccountsPage() {
+  const { data: accounts, isLoading: accountsLoading } = useAccounts();
+  const createMutation = useCreateAccount();
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+  const handleCreate = async (data: AccountFormValues) => {
+    try {
+      await createMutation.mutateAsync(data);
+      toast.success("Account created successfully");
+      setIsCreateDialogOpen(false);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create account",
+      );
+    }
+  };
 
   return (
-    <div className="flex flex-col p-6 gap-6">
-      <div className="flex items-center justify-between">
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Accounts</h1>
-          <p className="text-muted-foreground text-sm">Manage your accounts</p>
+          <p className="text-muted-foreground text-sm">
+            Manage your income and expenses
+          </p>
         </div>
-        <CreateAccountDialog />
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="size-4" />
+              <span className="hidden md:inline-block">Add Account</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Account</DialogTitle>
+              <DialogDescription>
+                Enter the details for your new account.
+              </DialogDescription>
+            </DialogHeader>
+            <AccountForm
+              onSubmit={handleCreate}
+              onCancel={() => setIsCreateDialogOpen(false)}
+              isLoading={createMutation.isPending}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {accounts.map((account) => (
-          <AccountCard key={account.name} account={account} />
-        ))}
-        {accounts.length === 0 && (
-          <div className="col-span-full text-center p-8 text-muted-foreground border border-dashed rounded-lg">
-            No accounts found. Create one to get started.
-          </div>
-        )}
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>All Accounts</CardTitle>
+          <CardDescription>View and manage all your accounts</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {accountsLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="size-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <AccountsList accounts={accounts || []} />
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
