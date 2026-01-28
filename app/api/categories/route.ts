@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDatabase } from "@/lib/mongodb";
-import { requireAuth } from "@/lib/auth";
-import { ObjectId } from "mongodb";
+import { getCurrentUser, requireAuth } from "@/lib/auth";
 import {
   Category,
   sanitizeCategory,
@@ -10,30 +9,27 @@ import {
 
 export async function GET() {
   try {
-    const user = await requireAuth();
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const db = await getDatabase();
 
     const categories = await db
       .collection<Category>("categories")
-      .find({ userId: new ObjectId(user.id) })
+      .find()
       .sort({ type: 1, name: 1 })
       .toArray();
 
     // If user has no categories, create default ones
     if (categories.length === 0) {
-      const now = new Date();
-      const defaultCategories: Category[] = DEFAULT_CATEGORIES.map((cat) => ({
-        ...cat,
-        userId: new ObjectId(user.id),
-        createdAt: now,
-        updatedAt: now,
-      }));
-
-      await db.collection<Category>("categories").insertMany(defaultCategories);
+      await db
+        .collection<Category>("categories")
+        .insertMany(DEFAULT_CATEGORIES);
 
       const newCategories = await db
         .collection<Category>("categories")
-        .find({ userId: new ObjectId(user.id) })
+        .find()
         .sort({ type: 1, name: 1 })
         .toArray();
 
@@ -59,7 +55,10 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const user = await requireAuth();
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const body = await request.json();
 
     const { name, type, icon, color } = body;
@@ -79,17 +78,13 @@ export async function POST(request: Request) {
     }
 
     const db = await getDatabase();
-    const now = new Date();
 
     const category: Category = {
-      userId: new ObjectId(user.id),
       name: name.trim(),
       type,
       icon,
       color,
       isDefault: false,
-      createdAt: now,
-      updatedAt: now,
     };
 
     const result = await db

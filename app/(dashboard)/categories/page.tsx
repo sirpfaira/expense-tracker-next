@@ -86,9 +86,16 @@ import {
   Book,
   Newspaper,
   PiggyBank,
-  Type as type,
+  Type as TypeIcon,
   LucideIcon,
+  ShoppingBasket,
+  BriefcaseBusiness,
+  Sofa,
+  Church,
+  CircleDollarSign,
 } from "lucide-react";
+import { useAuth } from "@/components/providers/auth-provider";
+import LoadingIndicator from "@/components/layout/loading-indicator";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   utensils: Utensils,
@@ -97,15 +104,19 @@ const ICON_MAP: Record<string, LucideIcon> = {
   zap: Zap,
   "heart-pulse": HeartPulse,
   "shopping-bag": ShoppingBag,
+  "shopping-basket": ShoppingBasket,
   "graduation-cap": GraduationCap,
   plane: Plane,
   briefcase: Briefcase,
+  "briefcase-business": BriefcaseBusiness,
   laptop: Laptop,
   "trending-up": TrendingUp,
   gift: Gift,
   "plus-circle": PlusCircle,
   "minus-circle": MinusCircle,
   home: Home,
+  church: Church,
+  sofa: Sofa,
   phone: Phone,
   wifi: Wifi,
   music: Music,
@@ -120,6 +131,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   book: Book,
   newspaper: Newspaper,
   "piggy-bank": PiggyBank,
+  "circle-dollar-sign": CircleDollarSign,
 };
 
 function CategoryIcon({
@@ -143,6 +155,7 @@ interface CategoryFormData {
 }
 
 export default function CategoriesPage() {
+  const { user } = useAuth();
   const { data: categories, isLoading } = useCategories();
   const createCategory = useCreateCategory();
   const updateCategory = useUpdateCategory();
@@ -244,144 +257,6 @@ export default function CategoriesPage() {
     );
   }
 
-  const CategoryForm = ({
-    onSubmit,
-    submitLabel,
-    isLoading: isSubmitting,
-  }: {
-    onSubmit: () => void;
-    submitLabel: string;
-    isLoading: boolean;
-  }) => (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="name">Name</Label>
-        <Input
-          id="name"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          placeholder="Category name"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="type">Type</Label>
-        <Select
-          value={formData.type}
-          onValueChange={(v) =>
-            setFormData({ ...formData, type: v as CategoryType })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="expense">Expense</SelectItem>
-            <SelectItem value="income">Income</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label>Icon</Label>
-        <div className="grid grid-cols-6 gap-2 p-3 border rounded-md max-h-48 overflow-y-auto">
-          {ICON_OPTIONS.map((icon) => (
-            <button
-              type="button"
-              key={icon}
-              onClick={() => setFormData({ ...formData, icon })}
-              className={`p-2 rounded-md hover:bg-accent transition-colors ${
-                formData.icon === icon ? "bg-accent ring-2 ring-primary" : ""
-              }`}
-            >
-              <CategoryIcon icon={icon} color={formData.color} size={20} />
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label>Color</Label>
-        <div className="grid grid-cols-9 gap-2">
-          {COLOR_OPTIONS.map((color) => (
-            <button
-              type="button"
-              key={color}
-              onClick={() => setFormData({ ...formData, color })}
-              className={`size-8 rounded-full transition-transform hover:scale-110 ${
-                formData.color === color
-                  ? "ring-2 ring-offset-2 ring-primary"
-                  : ""
-              }`}
-              style={{ backgroundColor: color }}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div className="flex items-center gap-3 p-3 border rounded-md bg-muted/50">
-        <div
-          className="size-10 rounded-lg flex items-center justify-center"
-          style={{ backgroundColor: `${formData.color}20` }}
-        >
-          <CategoryIcon icon={formData.icon} color={formData.color} size={24} />
-        </div>
-        <div>
-          <p className="font-medium">{formData.name || "Category Name"}</p>
-          <p className="text-xs text-muted-foreground capitalize">
-            {formData.type}
-          </p>
-        </div>
-      </div>
-
-      <DialogFooter>
-        <Button onClick={onSubmit} disabled={isSubmitting}>
-          {isSubmitting && <Loader2 className="size-4 animate-spin" />}
-          {submitLabel}
-        </Button>
-      </DialogFooter>
-    </div>
-  );
-
-  const CategoryCard = ({ category }: { category: CategoryResponse }) => (
-    <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-      <div className="flex items-center gap-3">
-        <div
-          className="size-10 rounded-lg flex items-center justify-center"
-          style={{ backgroundColor: `${category.color}20` }}
-        >
-          <CategoryIcon icon={category.icon} color={category.color} size={20} />
-        </div>
-        <div>
-          <p className="font-medium text-foreground">{category.name}</p>
-          {category.isDefault && (
-            <Badge variant="secondary" className="text-xs">
-              Default
-            </Badge>
-          )}
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => openEditDialog(category)}
-        >
-          <Pencil className="size-4" />
-        </Button>
-        {!category.isDefault && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setDeletingCategory(category)}
-          >
-            <Trash2 className="size-4 text-destructive" />
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -391,76 +266,94 @@ export default function CategoriesPage() {
             Manage your transaction categories
           </p>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)}>
-          <Plus className="size-4" />
-          Add Category
-        </Button>
+        {user && user.role === "admin" && (
+          <Button onClick={() => setIsCreateOpen(true)}>
+            <Plus className="size-4" />
+            Add Category
+          </Button>
+        )}
       </div>
 
-      <Tabs defaultValue="expense">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="expense">
-            Expenses ({expenseCategories.length})
-          </TabsTrigger>
-          <TabsTrigger value="income">
-            Income ({incomeCategories.length})
-          </TabsTrigger>
-        </TabsList>
+      {user && categories ? (
+        <Tabs defaultValue="expense">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="expense">
+              Expenses ({expenseCategories.length})
+            </TabsTrigger>
+            <TabsTrigger value="income">
+              Income ({incomeCategories.length})
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="expense" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Tags className="size-5" />
-                Expense Categories
-              </CardTitle>
-              <CardDescription>
-                Categories for tracking your spending
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {expenseCategories.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  No expense categories yet
-                </p>
-              ) : (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {expenseCategories.map((category) => (
-                    <CategoryCard key={category.id} category={category} />
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+          <TabsContent value="expense" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Tags className="size-5" />
+                  Expense Categories
+                </CardTitle>
+                <CardDescription>
+                  Categories for tracking your spending
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {expenseCategories.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    No expense categories yet
+                  </p>
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {expenseCategories.map((category) => (
+                      <CategoryCard
+                        key={category.id}
+                        category={category}
+                        openEditDialog={openEditDialog}
+                        setDeletingCategory={setDeletingCategory}
+                        role={user.role}
+                      />
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <TabsContent value="income" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Tags className="size-5" />
-                Income Categories
-              </CardTitle>
-              <CardDescription>
-                Categories for tracking your earnings
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {incomeCategories.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  No income categories yet
-                </p>
-              ) : (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {incomeCategories.map((category) => (
-                    <CategoryCard key={category.id} category={category} />
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="income" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Tags className="size-5" />
+                  Income Categories
+                </CardTitle>
+                <CardDescription>
+                  Categories for tracking your earnings
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {incomeCategories.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    No income categories yet
+                  </p>
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {incomeCategories.map((category) => (
+                      <CategoryCard
+                        key={category.id}
+                        category={category}
+                        openEditDialog={openEditDialog}
+                        setDeletingCategory={setDeletingCategory}
+                        role={user.role}
+                      />
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      ) : (
+        <LoadingIndicator />
+      )}
 
       {/* Create Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -472,9 +365,11 @@ export default function CategoriesPage() {
             </DialogDescription>
           </DialogHeader>
           <CategoryForm
+            formData={formData}
+            setFormData={setFormData}
             onSubmit={handleCreate}
             submitLabel="Create Category"
-            isLoading={createCategory.isPending}
+            isSubmitting={createCategory.isPending}
           />
         </DialogContent>
       </Dialog>
@@ -490,9 +385,11 @@ export default function CategoriesPage() {
             <DialogDescription>Update the category details</DialogDescription>
           </DialogHeader>
           <CategoryForm
-            onSubmit={handleUpdate}
-            submitLabel="Save Changes"
-            isLoading={updateCategory.isPending}
+            formData={formData}
+            setFormData={setFormData}
+            onSubmit={handleCreate}
+            submitLabel="Create Category"
+            isSubmitting={createCategory.isPending}
           />
         </DialogContent>
       </Dialog>
@@ -528,3 +425,160 @@ export default function CategoriesPage() {
     </div>
   );
 }
+
+type CategoryFormProps = {
+  // onSubmit: (data: CategoryFormValues) => Promise<void>;
+  formData: CategoryFormData;
+  setFormData: React.Dispatch<React.SetStateAction<CategoryFormData>>;
+  onSubmit: () => void;
+  submitLabel: string;
+  isSubmitting: boolean;
+};
+
+const CategoryForm = ({
+  formData,
+  setFormData,
+  onSubmit,
+  submitLabel,
+  isSubmitting,
+}: CategoryFormProps) => (
+  <div className="space-y-4">
+    <div className="space-y-2">
+      <Label htmlFor="name">Name</Label>
+      <Input
+        id="name"
+        value={formData.name}
+        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+        placeholder="Category name"
+      />
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="type">Type</Label>
+      <Select
+        value={formData.type}
+        onValueChange={(v) =>
+          setFormData({ ...formData, type: v as CategoryType })
+        }
+      >
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="expense">Expense</SelectItem>
+          <SelectItem value="income">Income</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+
+    <div className="space-y-2">
+      <Label>Icon</Label>
+      <div className="grid grid-cols-6 gap-2 p-3 border rounded-md max-h-48 overflow-y-auto">
+        {ICON_OPTIONS.map((icon) => (
+          <button
+            type="button"
+            key={icon}
+            onClick={() => setFormData({ ...formData, icon })}
+            className={`p-2 rounded-md hover:bg-accent transition-colors ${
+              formData.icon === icon ? "bg-accent ring-2 ring-primary" : ""
+            }`}
+          >
+            <CategoryIcon icon={icon} color={formData.color} size={20} />
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <div className="space-y-2">
+      <Label>Color</Label>
+      <div className="grid grid-cols-9 gap-2">
+        {COLOR_OPTIONS.map((color) => (
+          <button
+            type="button"
+            key={color}
+            onClick={() => setFormData({ ...formData, color })}
+            className={`size-8 rounded-full transition-transform hover:scale-110 ${
+              formData.color === color
+                ? "ring-2 ring-offset-2 ring-primary"
+                : ""
+            }`}
+            style={{ backgroundColor: color }}
+          />
+        ))}
+      </div>
+    </div>
+
+    <div className="flex items-center gap-3 p-3 border rounded-md bg-muted/50">
+      <div
+        className="size-10 rounded-lg flex items-center justify-center"
+        style={{ backgroundColor: `${formData.color}20` }}
+      >
+        <CategoryIcon icon={formData.icon} color={formData.color} size={24} />
+      </div>
+      <div>
+        <p className="font-medium">{formData.name || "Category Name"}</p>
+        <p className="text-xs text-muted-foreground capitalize">
+          {formData.type}
+        </p>
+      </div>
+    </div>
+
+    <DialogFooter>
+      <Button onClick={onSubmit} disabled={isSubmitting}>
+        {isSubmitting && <Loader2 className="size-4 animate-spin" />}
+        {submitLabel}
+      </Button>
+    </DialogFooter>
+  </div>
+);
+
+type CategoryCardProps = {
+  category: CategoryResponse;
+  openEditDialog: (category: CategoryResponse) => void;
+  setDeletingCategory: (category: CategoryResponse | null) => void;
+  role: string;
+};
+
+const CategoryCard = ({
+  category,
+  openEditDialog,
+  setDeletingCategory,
+  role,
+}: CategoryCardProps) => (
+  <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
+    <div className="flex items-center gap-3">
+      <div
+        className="size-10 rounded-lg flex items-center justify-center"
+        style={{ backgroundColor: `${category.color}20` }}
+      >
+        <CategoryIcon icon={category.icon} color={category.color} size={20} />
+      </div>
+      <div>
+        <p className="font-medium text-foreground">{category.name}</p>
+        {category.isDefault && (
+          <Badge variant="secondary" className="text-xs">
+            Default
+          </Badge>
+        )}
+      </div>
+    </div>
+    <div className="flex items-center gap-2">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => openEditDialog(category)}
+      >
+        <Pencil className="size-4" />
+      </Button>
+      {!category.isDefault && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setDeletingCategory(category)}
+        >
+          <Trash2 className="size-4 text-destructive" />
+        </Button>
+      )}
+    </div>
+  </div>
+);

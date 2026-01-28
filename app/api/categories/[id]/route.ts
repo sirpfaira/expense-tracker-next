@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDatabase } from "@/lib/mongodb";
-import { requireAuth } from "@/lib/auth";
+import { getCurrentUser, requireAuth } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { Category, sanitizeCategory } from "@/lib/models/category";
 
@@ -9,7 +9,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const user = await requireAuth();
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const { id } = await params;
 
     if (!ObjectId.isValid(id)) {
@@ -22,7 +25,6 @@ export async function GET(
     const db = await getDatabase();
     const category = await db.collection<Category>("categories").findOne({
       _id: new ObjectId(id),
-      userId: new ObjectId(user.id),
     });
 
     if (!category) {
@@ -50,7 +52,10 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const user = await requireAuth();
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const { id } = await params;
     const body = await request.json();
 
@@ -77,7 +82,6 @@ export async function PUT(
       .collection<Category>("categories")
       .findOne({
         _id: new ObjectId(id),
-        userId: new ObjectId(user.id),
       });
 
     if (!existingCategory) {
@@ -88,14 +92,13 @@ export async function PUT(
     }
 
     const result = await db.collection<Category>("categories").findOneAndUpdate(
-      { _id: new ObjectId(id), userId: new ObjectId(user.id) },
+      { _id: new ObjectId(id) },
       {
         $set: {
           name: name.trim(),
           type,
           icon,
           color,
-          updatedAt: new Date(),
         },
       },
       { returnDocument: "after" },
@@ -140,7 +143,6 @@ export async function DELETE(
 
     const result = await db.collection<Category>("categories").deleteOne({
       _id: new ObjectId(id),
-      userId: new ObjectId(user.id),
     });
 
     if (result.deletedCount === 0) {
