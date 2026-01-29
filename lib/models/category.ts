@@ -5,6 +5,7 @@ export type CategoryType = "income" | "expense";
 export interface Category {
   _id?: ObjectId;
   name: string;
+  uid: string;
   type: CategoryType;
   icon: string;
   color: string;
@@ -14,6 +15,7 @@ export interface Category {
 export interface CategoryResponse {
   id: string;
   name: string;
+  uid: string;
   type: CategoryType;
   icon: string;
   color: string;
@@ -24,6 +26,7 @@ export function sanitizeCategory(category: Category): CategoryResponse {
   return {
     id: category._id!.toString(),
     name: category.name,
+    uid: category.uid,
     type: category.type,
     icon: category.icon,
     color: category.color,
@@ -35,6 +38,7 @@ export const DEFAULT_CATEGORIES: Omit<Category, "_id">[] = [
   // Expense categories
   {
     name: "Transaction Charges",
+    uid: "exp-transaction-charges",
     type: "expense",
     icon: "circle-dollar-sign",
     color: "#6366f1",
@@ -42,6 +46,7 @@ export const DEFAULT_CATEGORIES: Omit<Category, "_id">[] = [
   },
   {
     name: "Groceries",
+    uid: "exp-groceries",
     type: "expense",
     icon: "shopping-basket",
     color: "#ef4444",
@@ -49,6 +54,7 @@ export const DEFAULT_CATEGORIES: Omit<Category, "_id">[] = [
   },
   {
     name: "Transportation",
+    uid: "exp-transportation",
     type: "expense",
     icon: "car",
     color: "#f97316",
@@ -56,6 +62,7 @@ export const DEFAULT_CATEGORIES: Omit<Category, "_id">[] = [
   },
   {
     name: "Entertainment",
+    uid: "exp-entertainment",
     type: "expense",
     icon: "film",
     color: "#a855f7",
@@ -63,6 +70,7 @@ export const DEFAULT_CATEGORIES: Omit<Category, "_id">[] = [
   },
   {
     name: "Utilities",
+    uid: "exp-utilities",
     type: "expense",
     icon: "zap",
     color: "#eab308",
@@ -70,6 +78,7 @@ export const DEFAULT_CATEGORIES: Omit<Category, "_id">[] = [
   },
   {
     name: "Healthcare",
+    uid: "exp-healthcare",
     type: "expense",
     icon: "heart-pulse",
     color: "#ec4899",
@@ -77,6 +86,7 @@ export const DEFAULT_CATEGORIES: Omit<Category, "_id">[] = [
   },
   {
     name: "Shopping",
+    uid: "exp-shopping",
     type: "expense",
     icon: "shopping-bag",
     color: "#06b6d4",
@@ -84,6 +94,7 @@ export const DEFAULT_CATEGORIES: Omit<Category, "_id">[] = [
   },
   {
     name: "Education",
+    uid: "exp-education",
     type: "expense",
     icon: "graduation-cap",
     color: "#8b5cf6",
@@ -91,6 +102,7 @@ export const DEFAULT_CATEGORIES: Omit<Category, "_id">[] = [
   },
   {
     name: "Furniture",
+    uid: "exp-furniture",
     type: "expense",
     icon: "sofa",
     color: "#8c5df6",
@@ -98,6 +110,7 @@ export const DEFAULT_CATEGORIES: Omit<Category, "_id">[] = [
   },
   {
     name: "Church",
+    uid: "exp-church",
     type: "expense",
     icon: "church",
     color: "#8e4df6",
@@ -105,6 +118,7 @@ export const DEFAULT_CATEGORIES: Omit<Category, "_id">[] = [
   },
   {
     name: "Family",
+    uid: "exp-family",
     type: "expense",
     icon: "gift",
     color: "#f43f5e",
@@ -112,6 +126,7 @@ export const DEFAULT_CATEGORIES: Omit<Category, "_id">[] = [
   },
   {
     name: "Telecommunications",
+    uid: "exp-telecommunications",
     type: "expense",
     icon: "wifi",
     color: "#f48f5e",
@@ -119,6 +134,7 @@ export const DEFAULT_CATEGORIES: Omit<Category, "_id">[] = [
   },
   {
     name: "Business",
+    uid: "exp-business",
     type: "expense",
     icon: "briefcase-business",
     color: "#14b8a6",
@@ -127,6 +143,7 @@ export const DEFAULT_CATEGORIES: Omit<Category, "_id">[] = [
   // Income categories
   {
     name: "Salary",
+    uid: "inc-salary",
     type: "income",
     icon: "briefcase",
     color: "#22c55e",
@@ -134,6 +151,7 @@ export const DEFAULT_CATEGORIES: Omit<Category, "_id">[] = [
   },
   {
     name: "Side Hustle",
+    uid: "inc-side-hustle",
     type: "income",
     icon: "laptop",
     color: "#10b981",
@@ -141,6 +159,7 @@ export const DEFAULT_CATEGORIES: Omit<Category, "_id">[] = [
   },
   {
     name: "Business",
+    uid: "inc-business",
     type: "income",
     icon: "briefcase-business",
     color: "#14b8a6",
@@ -148,6 +167,7 @@ export const DEFAULT_CATEGORIES: Omit<Category, "_id">[] = [
   },
   {
     name: "Gift",
+    uid: "inc-gift",
     type: "income",
     icon: "gift",
     color: "#f43f5e",

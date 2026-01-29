@@ -78,9 +78,22 @@ export async function POST(request: Request) {
     }
 
     const db = await getDatabase();
+    const nameToUid = name.trim().toLowerCase().replace(/\s+/g, "-");
+    const uid = `${type.substring(0, 3)}-${nameToUid}`;
+
+    const existingCategory = await db
+      .collection<Category>("categories")
+      .findOne({ uid });
+    if (existingCategory) {
+      return NextResponse.json(
+        { error: "Category with this name already exists" },
+        { status: 400 },
+      );
+    }
 
     const category: Category = {
       name: name.trim(),
+      uid,
       type,
       icon,
       color,

@@ -91,11 +91,30 @@ export async function PUT(
       );
     }
 
+    const nameToUid = name.trim().toLowerCase().replace(/\s+/g, "-");
+    const uid = `${type.substring(0, 3)}-${nameToUid}`;
+
+    // Check if category with new uid already exists in the database except current category
+    const existingCategoryUid = await db
+      .collection<Category>("categories")
+      .findOne({
+        uid: uid,
+        _id: { $ne: new ObjectId(existingCategory._id) },
+      });
+
+    if (existingCategoryUid) {
+      return NextResponse.json(
+        { error: "Category with this uid already exists" },
+        { status: 400 },
+      );
+    }
+
     const result = await db.collection<Category>("categories").findOneAndUpdate(
       { _id: new ObjectId(id) },
       {
         $set: {
           name: name.trim(),
+          uid,
           type,
           icon,
           color,

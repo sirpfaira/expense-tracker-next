@@ -15,7 +15,7 @@ export const dbTransactionSchema = z.object({
   type: z.enum(["income", "expense"]),
   category: z.string().min(1, "Category is required"),
   account: z.string().min(1, "Account is required"),
-  currency: z.string().min(1, "Currency is required"),
+  currency: z.enum(["usd", "zar"]),
   amount: z.coerce.number().positive("Amount must be a positive number"),
   description: z.string().min(1, "Description is required").max(100),
   date: z.coerce.date(),
@@ -29,7 +29,7 @@ export interface TransactionInput {
   type: TransactionType;
   category: string;
   account: string;
-  currency: string;
+  currency: AccountCurrency;
   amount: number;
   description: string;
   date: string;
@@ -74,33 +74,3 @@ export function sanitizeTransaction(
     date: transaction.date.toISOString(),
   };
 }
-
-// export const CATEGORY_LABELS: Record<TransactionCategory, string> = {
-//   food: "Food & Dining",
-//   transportation: "Transportation",
-//   entertainment: "Entertainment",
-//   utilities: "Utilities",
-//   healthcare: "Healthcare",
-//   shopping: "Shopping",
-//   salary: "Salary",
-//   freelance: "Freelance",
-//   investment: "Investment",
-//   other: "Other",
-// };
-
-// export const EXPENSE_CATEGORIES: TransactionCategory[] = [
-//   "food",
-//   "transportation",
-//   "entertainment",
-//   "utilities",
-//   "healthcare",
-//   "shopping",
-//   "other",
-// ];
-
-// export const INCOME_CATEGORIES: TransactionCategory[] = [
-//   "salary",
-//   "freelance",
-//   "investment",
-//   "other",
-// ];

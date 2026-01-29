@@ -48,7 +48,6 @@ import { TransactionForm } from "./transaction-form";
 import {
   TransactionInput,
   TransactionResponse,
-  TransactionType,
 } from "@/lib/models/transaction";
 import {
   useUpdateTransaction,
@@ -58,17 +57,20 @@ import { toast } from "sonner";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { CategoryResponse } from "@/lib/models/category";
 import { AccountResponse } from "@/lib/models/account";
+import { UserResponse } from "@/lib/models/user";
 
 interface TransactionsListProps {
   transactions: TransactionResponse[];
   categories: CategoryResponse[] | undefined;
   accounts: AccountResponse[] | undefined;
+  user: UserResponse;
 }
 
 export function TransactionsList({
   transactions,
   categories,
   accounts,
+  user,
 }: TransactionsListProps) {
   const isMobile = useIsMobile();
   const [editingTransaction, setEditingTransaction] =
@@ -129,7 +131,7 @@ export function TransactionsList({
       {isMobile ? (
         <div className="flex flex-col divide-y divide-muted border-y border-muted">
           {transactions.map((transaction) => (
-            <DropdownMenu>
+            <DropdownMenu key={transaction.id}>
               <DropdownMenuTrigger asChild>
                 <div
                   key={transaction.id}
@@ -169,7 +171,7 @@ export function TransactionsList({
                         : "text-red-500"
                     }`}
                   >
-                    {formatCurrency(transaction.amount, transaction.currency)}
+                    {formatCurrency(transaction.amount, user.currency)}
                   </span>
                 </div>
               </DropdownMenuTrigger>
@@ -228,7 +230,7 @@ export function TransactionsList({
                       : "text-red-500"
                   }`}
                 >
-                  {formatCurrency(transaction.amount, transaction.currency)}
+                  {formatCurrency(transaction.amount, user.currency)}
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>

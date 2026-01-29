@@ -8,6 +8,7 @@ import {
   dbTransactionSchema,
 } from "@/lib/models/transaction";
 import z from "zod";
+import { AccountCurrency } from "@/lib/models/account";
 
 export async function GET() {
   try {
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
       userId: new ObjectId(user.id),
       type: data.type,
       account: data.account,
-      currency: data.currency,
+      currency: data.currency as AccountCurrency,
       category: new ObjectId(data.category),
       amount: data.amount,
       description: data.description.trim(),

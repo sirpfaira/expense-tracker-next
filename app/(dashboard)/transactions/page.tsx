@@ -97,6 +97,7 @@ export default function TransactionsPage() {
               transactions={transactions || []}
               categories={categories}
               accounts={accounts}
+              user={user}
             />
           </CardContent>
         </Card>
