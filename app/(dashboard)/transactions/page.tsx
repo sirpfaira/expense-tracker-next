@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Card,
   CardContent,
@@ -17,19 +17,25 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { TransactionForm } from "@/components/transactions/transaction-form";
 import { TransactionsList } from "@/components/transactions/transactions-list";
 import {
   useTransactions,
   useCreateTransaction,
 } from "@/hooks/use-transactions";
-import { TransactionInput } from "@/lib/models/transaction";
+import {
+  TransactionInput,
+  TransactionResponse,
+} from "@/lib/models/transaction";
 import { toast } from "sonner";
 import { useAuth } from "@/components/providers/auth-provider";
 import LoadingIndicator from "@/components/layout/loading-indicator";
 import { useCategories } from "@/hooks/use-categories";
 import { useAccounts } from "@/hooks/use-accounts";
+import { CategoryResponse } from "@/lib/models/category";
+import { AccountResponse } from "@/lib/models/account";
+import { UserResponse } from "@/lib/models/user";
 
 export default function TransactionsPage() {
   const { user } = useAuth();
@@ -52,9 +58,9 @@ export default function TransactionsPage() {
   };
 
   return (
-    <div className="flex flex-col p-6">
+    <div className="flex flex-col p-2 md:p-6">
       <div className="flex items-center justify-between mb-8">
-        <div>
+        <div className="px-1">
           <h1 className="text-2xl font-bold text-foreground">Transactions</h1>
           <p className="text-muted-foreground text-sm">
             Manage your income and expenses
@@ -85,25 +91,92 @@ export default function TransactionsPage() {
         </Dialog>
       </div>
       {user && transactions ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>All Transactions</CardTitle>
-            <CardDescription>
-              View and manage all your transactions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <TransactionsList
-              transactions={transactions || []}
-              categories={categories}
-              accounts={accounts}
-              user={user}
-            />
-          </CardContent>
-        </Card>
+        <TransactionsFilter
+          transactions={transactions || []}
+          categories={categories}
+          accounts={accounts}
+          user={user}
+        />
       ) : (
         <LoadingIndicator />
       )}
     </div>
+  );
+}
+
+interface TransactionsFilterProps {
+  transactions: TransactionResponse[];
+  categories: CategoryResponse[] | undefined;
+  accounts: AccountResponse[] | undefined;
+  user: UserResponse;
+}
+function TransactionsFilter({
+  transactions,
+  categories,
+  accounts,
+  user,
+}: TransactionsFilterProps) {
+  // 1. Set current month/year as default state
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  // 2. Navigation handlers
+  const handlePrevMonth = () => {
+    setCurrentDate(
+      (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1),
+    );
+  };
+
+  const handleNextMonth = () => {
+    setCurrentDate(
+      (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1),
+    );
+  };
+
+  // 3. Filter transactions for the selected month/year
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter((tx) => {
+      const txDate = new Date(tx.date);
+      return (
+        txDate.getMonth() === currentDate.getMonth() &&
+        txDate.getFullYear() === currentDate.getFullYear()
+      );
+    });
+  }, [transactions, currentDate]);
+
+  // Format month label (e.g., "January 2026")
+  const monthLabel = currentDate.toLocaleString("default", {
+    month: "long",
+    year: "numeric",
+  });
+  return (
+    <Card>
+      <CardHeader className="px-0">
+        <div className="flex flex-col space-y-2 md:flex-row md:justify-between">
+          <div className="flex flex-col px-5">
+            <CardTitle>All Transactions</CardTitle>
+            <CardDescription>
+              View and manage all your transactions here
+            </CardDescription>
+          </div>
+          <div className="flex space-x-2 justify-between items-center text-muted-foreground pl-1 pr-3">
+            <Button variant={"ghost"} size={"icon"} onClick={handlePrevMonth}>
+              <ChevronLeft className="size-6" />
+            </Button>
+            <h2 className="font-medium">Showing {monthLabel}</h2>
+            <Button variant={"ghost"} size={"icon"} onClick={handleNextMonth}>
+              <ChevronRight className="size-6" />
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <TransactionsList
+          transactions={filteredTransactions || []}
+          categories={categories}
+          accounts={accounts}
+          user={user}
+        />
+      </CardContent>
+    </Card>
   );
 }

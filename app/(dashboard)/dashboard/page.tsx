@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCategory, formatCurrency, formatDate } from "@/lib/utils";
 import LoadingIndicator from "@/components/layout/loading-indicator";
 
 export default function DashboardPage() {
@@ -43,8 +43,8 @@ export default function DashboardPage() {
   return (
     <>
       {user ? (
-        <div className="flex flex-col space-y-8 p-6">
-          <div>
+        <div className="flex flex-col space-y-8 p-2 md:p-6">
+          <div className="px-1">
             <h1 className="text-2xl font-bold text-foreground">
               Welcome Back, {user.name?.split(" ")[0]}
             </h1>
@@ -52,7 +52,7 @@ export default function DashboardPage() {
               Here&apos;s an overview of your finances
             </p>
           </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-2 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
             <div className="px-6 py-4 bg-card rounded-xl border shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-muted-foreground/10 rounded-full text-sidebar-foreground/90">
@@ -203,36 +203,17 @@ export default function DashboardPage() {
                         key={transaction.id}
                         className="flex items-center justify-between py-2"
                       >
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`flex items-center justify-center size-9 rounded-full ${
-                              transaction.type === "income"
-                                ? "bg-emerald-100 text-emerald-600"
-                                : "bg-red-100 text-red-500"
-                            }`}
-                          >
-                            {transaction.type === "income" ? (
-                              <ArrowUp className="size-4" />
-                            ) : (
-                              <ArrowDown className="size-4" />
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">
-                              {transaction.description}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              <span>
-                                {" "}
-                                {formatDate(transaction.date, "SHORT")}
-                              </span>
-                              <span> - </span>
-                              <span className="capitalize">
-                                {transaction.category}
-                              </span>
-                            </p>
-                          </div>
+                        <div>
+                          <p className="text-sm font-medium">
+                            {formatCategory(transaction.category)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            <span>{formatDate(transaction.date, "SHORT")}</span>
+                            <span> - </span>
+                            <span>{transaction.description}</span>
+                          </p>
                         </div>
+
                         <span
                           className={`font-medium ${
                             transaction.type === "income"
@@ -309,7 +290,7 @@ export default function DashboardPage() {
           </div>
         </div>
       ) : (
-       <LoadingIndicator/>
+        <LoadingIndicator />
       )}
     </>
   );

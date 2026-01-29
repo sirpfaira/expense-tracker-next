@@ -40,8 +40,6 @@ import {
   Trash2,
   ArrowUpCircle,
   ArrowDownCircle,
-  ArrowUp,
-  ArrowDown,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TransactionForm } from "./transaction-form";
@@ -54,7 +52,7 @@ import {
   useDeleteTransaction,
 } from "@/hooks/use-transactions";
 import { toast } from "sonner";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCategory, formatCurrency, formatDate } from "@/lib/utils";
 import { CategoryResponse } from "@/lib/models/category";
 import { AccountResponse } from "@/lib/models/account";
 import { UserResponse } from "@/lib/models/user";
@@ -118,7 +116,9 @@ export function TransactionsList({
         <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
           <ArrowDownCircle className="w-6 h-6 text-muted-foreground" />
         </div>
-        <p className="text-muted-foreground">No transactions yet</p>
+        <p className="text-muted-foreground">
+          No transactions found for the month
+        </p>
         <p className="text-sm text-muted-foreground">
           Add your first transaction to get started
         </p>
@@ -127,7 +127,7 @@ export function TransactionsList({
   }
 
   return (
-    <>
+    <div className="flex flex-col">
       {isMobile ? (
         <div className="flex flex-col divide-y divide-muted border-y border-muted">
           {transactions.map((transaction) => (
@@ -137,29 +137,16 @@ export function TransactionsList({
                   key={transaction.id}
                   className="flex items-center justify-between py-2"
                 >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`flex items-center justify-center size-9 rounded-full ${
-                        transaction.type === "income"
-                          ? "bg-emerald-100 text-emerald-600"
-                          : "bg-red-100 text-red-500"
-                      }`}
-                    >
-                      {transaction.type === "income" ? (
-                        <ArrowUp className="size-4" />
-                      ) : (
-                        <ArrowDown className="size-4" />
-                      )}
-                    </div>
-                    <div>
+                  <div className="flex items-center gap-3 max-w-[70%]">
+                    <div className="w-full">
                       <p className="text-sm font-medium">
-                        {transaction.description}
+                        {formatCategory(transaction.category)}
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        <span> {formatDate(transaction.date)}</span>
+                      <p className="text-xs text-muted-foreground truncate">
+                        <span> {formatDate(transaction.date, "SHORT")}</span>
                         <span> - </span>
                         <span className="capitalize">
-                          {transaction.category}
+                          {transaction.description}
                         </span>
                       </p>
                     </div>
@@ -199,8 +186,9 @@ export function TransactionsList({
             <TableRow>
               <TableHead>Date</TableHead>
               <TableHead>Description</TableHead>
-              <TableHead>Category</TableHead>
               <TableHead>Type</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Account</TableHead>
               <TableHead className="text-right">Amount</TableHead>
               <TableHead className="w-12.5"></TableHead>
             </TableRow>
@@ -211,9 +199,6 @@ export function TransactionsList({
                 <TableCell>{formatDate(transaction.date)}</TableCell>
                 <TableCell>{transaction.description}</TableCell>
                 <TableCell>
-                  <Badge variant="secondary">{transaction.category}</Badge>
-                </TableCell>
-                <TableCell>
                   <div className="flex items-center gap-1.5">
                     {transaction.type === "income" ? (
                       <ArrowUpCircle className="w-4 h-4 text-emerald-600" />
@@ -222,6 +207,14 @@ export function TransactionsList({
                     )}
                     <span className="capitalize">{transaction.type}</span>
                   </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="secondary">
+                    {formatCategory(transaction.category)}
+                  </Badge>
+                </TableCell>
+                <TableCell className="capitalize">
+                  {transaction.account.toLowerCase()}
                 </TableCell>
                 <TableCell
                   className={`text-right font-medium ${
@@ -232,31 +225,33 @@ export function TransactionsList({
                 >
                   {formatCurrency(transaction.amount, user.currency)}
                 </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Open menu</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => setEditingTransaction(transaction)}
-                      >
-                        <Pencil className="w-4 h-4" />
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onClick={() => setDeletingTransaction(transaction)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+                {user.id === transaction.userId && (
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Open menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => setEditingTransaction(transaction)}
+                        >
+                          <Pencil className="w-4 h-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => setDeletingTransaction(transaction)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>
@@ -310,6 +305,6 @@ export function TransactionsList({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }

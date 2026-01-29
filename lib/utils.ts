@@ -40,3 +40,11 @@ export const formatDate = (
 
   return date.toLocaleDateString("en-GB", options);
 };
+
+export const formatCategory = (uid: string) => {
+  return uid
+    .replace(/^[a-z]{3}-/, "") // Removes any 3-letter prefix + hyphen (id-, bn-, etc.)
+    .split("-") // Splits "two-pears" into ["two", "pears"]
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+};

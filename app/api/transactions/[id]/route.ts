@@ -75,6 +75,22 @@ export async function PUT(
     const data = dbTransactionSchema.parse(body);
     const db = await getDatabase();
 
+    const transaction = await db
+      .collection<Transaction>("transactions")
+      .findOne({
+        _id: new ObjectId(id),
+      });
+
+    if (!transaction) {
+      return NextResponse.json(
+        { error: "Transaction not found" },
+        { status: 404 },
+      );
+    }
+
+    const oldAmount = transaction.amount;
+    const newAmount = data.amount;
+
     const result = await db
       .collection<Transaction>("transactions")
       .findOneAndUpdate(
@@ -86,7 +102,7 @@ export async function PUT(
             type: data.type,
             account: data.account,
             currency: data.currency,
-            category: new ObjectId(data.category),
+            category: data.category,
             amount: data.amount,
             description: data.description.trim(),
             date: new Date(data.date),
@@ -100,6 +116,24 @@ export async function PUT(
         { error: "Transaction not found" },
         { status: 404 },
       );
+    }
+
+    if (oldAmount !== newAmount) {
+      if (data.type === "income") {
+        await db
+          .collection("accounts")
+          .updateOne(
+            { shortCode: data.account },
+            { $inc: { balance: newAmount - oldAmount } },
+          );
+      } else {
+        await db
+          .collection("accounts")
+          .updateOne(
+            { shortCode: data.account },
+            { $inc: { balance: oldAmount - newAmount } },
+          );
+      }
     }
 
     return NextResponse.json({ transaction: sanitizeTransaction(result) });
@@ -136,6 +170,19 @@ export async function DELETE(
 
     const db = await getDatabase();
 
+    const transaction = await db
+      .collection<Transaction>("transactions")
+      .findOne({
+        _id: new ObjectId(id),
+      });
+
+    if (!transaction) {
+      return NextResponse.json(
+        { error: "Transaction not found" },
+        { status: 404 },
+      );
+    }
+
     const result = await db.collection<Transaction>("transactions").deleteOne({
       _id: new ObjectId(id),
     });
@@ -145,6 +192,22 @@ export async function DELETE(
         { error: "Transaction not found" },
         { status: 404 },
       );
+    }
+
+    if (transaction.type === "income") {
+      await db
+        .collection("accounts")
+        .updateOne(
+          { shortCode: transaction.account },
+          { $inc: { balance: transaction.amount * -1 } },
+        );
+    } else {
+      await db
+        .collection("accounts")
+        .updateOne(
+          { shortCode: transaction.account },
+          { $inc: { balance: transaction.amount } },
+        );
     }
 
     return NextResponse.json({ message: "Transaction deleted successfully" });

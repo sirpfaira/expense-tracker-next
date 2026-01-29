@@ -7,7 +7,7 @@ export const transactionSchema = z.object({
   category: z.string().min(1, "Category is required"),
   account: z.string().min(1, "Account is required"),
   amount: z.coerce.number().positive("Amount must be a positive number"),
-  description: z.string().min(1, "Description is required").max(100),
+  description: z.string().min(1, "Description is required").max(36),
   date: z.coerce.date(),
 });
 
@@ -17,7 +17,7 @@ export const dbTransactionSchema = z.object({
   account: z.string().min(1, "Account is required"),
   currency: z.enum(["usd", "zar"]),
   amount: z.coerce.number().positive("Amount must be a positive number"),
-  description: z.string().min(1, "Description is required").max(100),
+  description: z.string().min(1, "Description is required").max(36),
   date: z.coerce.date(),
 });
 
@@ -39,7 +39,7 @@ export interface Transaction {
   _id?: ObjectId;
   userId: ObjectId;
   type: TransactionType;
-  category: ObjectId;
+  category: string;
   account: string;
   currency: AccountCurrency;
   amount: number;
@@ -66,7 +66,7 @@ export function sanitizeTransaction(
     id: transaction._id!.toString(),
     userId: transaction.userId.toString(),
     type: transaction.type,
-    category: transaction.category.toString(),
+    category: transaction.category,
     account: transaction.account,
     currency: transaction.currency,
     amount: transaction.amount,

@@ -163,7 +163,7 @@ export function TransactionForm({
                   </SelectTrigger>
                   <SelectContent position="item-aligned">
                     {currentCategories?.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
+                      <SelectItem key={cat.id} value={cat.uid}>
                         {cat.name}
                       </SelectItem>
                     ))}

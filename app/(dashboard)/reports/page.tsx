@@ -34,7 +34,6 @@ import {
   Line,
   ResponsiveContainer,
 } from "recharts";
-import { CATEGORY_LABELS, TransactionCategory } from "@/lib/models/transaction";
 import {
   BarChart3,
   PieChart as PieChartIcon,
@@ -43,6 +42,8 @@ import {
   Loader2,
   Calendar,
 } from "lucide-react";
+import { useAuth } from "@/components/providers/auth-provider";
+import { formatCategory, formatCurrency } from "@/lib/utils";
 
 const CHART_COLORS = [
   "#2563eb", // blue
@@ -60,6 +61,7 @@ const CHART_COLORS = [
 type TimeRange = "7d" | "30d" | "90d" | "1y" | "all";
 
 export default function ReportsPage() {
+  const { user } = useAuth();
   const { data: transactions, isLoading } = useTransactions();
   const [timeRange, setTimeRange] = useState<TimeRange>("30d");
 
@@ -108,9 +110,8 @@ export default function ReportsPage() {
     filteredTransactions
       .filter((t) => t.type === "expense")
       .forEach((t) => {
-        const label =
-          CATEGORY_LABELS[t.category as TransactionCategory] || t.category;
-        expensesByCategory[label] = (expensesByCategory[label] || 0) + t.amount;
+        expensesByCategory[t.category] =
+          (expensesByCategory[t.category] || 0) + t.amount;
       });
 
     return Object.entries(expensesByCategory)
@@ -190,7 +191,7 @@ export default function ReportsPage() {
       }));
   }, [filteredTransactions]);
 
-  if (isLoading) {
+  if (isLoading || !user) {
     return (
       <div className="flex items-center justify-center h-96">
         <Loader2 className="size-8 animate-spin text-muted-foreground" />
@@ -224,56 +225,51 @@ export default function ReportsPage() {
           </SelectContent>
         </Select>
       </div>
-
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Total Income</CardDescription>
             <CardTitle className="text-2xl text-green-600">
-              $
-              {summaryStats.income.toLocaleString("en-US", {
-                minimumFractionDigits: 2,
-              })}
+              {formatCurrency(summaryStats.income, user.currency)}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <TrendingUp className="size-3 text-green-600" />
-              {filteredTransactions.filter((t) => t.type === "income").length}
-              transactions
+              <span>
+                {filteredTransactions.filter((t) => t.type === "income").length}
+              </span>
+              <span>transactions</span>
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Total Expenses</CardDescription>
             <CardTitle className="text-2xl text-red-600">
-              $
-              {summaryStats.expenses.toLocaleString("en-US", {
-                minimumFractionDigits: 2,
-              })}
+              {formatCurrency(summaryStats.expenses, user.currency)}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <TrendingDown className="size-3 text-red-600" />
-              {filteredTransactions.filter((t) => t.type === "expense").length}
-              transactions
+              <span>
+                {
+                  filteredTransactions.filter((t) => t.type === "expense")
+                    .length
+                }
+              </span>
+              <span>transactions</span>
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Net Balance</CardDescription>
+            <CardDescription>Available Balance</CardDescription>
             <CardTitle
               className={`text-2xl ${summaryStats.balance >= 0 ? "text-green-600" : "text-red-600"}`}
             >
-              $
-              {summaryStats.balance.toLocaleString("en-US", {
-                minimumFractionDigits: 2,
-              })}
+              {formatCurrency(summaryStats.balance, user.currency)}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -287,7 +283,6 @@ export default function ReportsPage() {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Transactions</CardDescription>
@@ -303,7 +298,6 @@ export default function ReportsPage() {
           </CardContent>
         </Card>
       </div>
-
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -366,7 +360,6 @@ export default function ReportsPage() {
             )}
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -396,12 +389,11 @@ export default function ReportsPage() {
                           const data = payload[0].payload;
                           return (
                             <div className="bg-background border border-border rounded-lg p-2 shadow-lg">
-                              <p className="font-medium">{data.name}</p>
+                              <p className="font-medium">
+                                {formatCategory(data.name)}
+                              </p>
                               <p className="text-sm text-muted-foreground">
-                                $
-                                {data.value.toLocaleString("en-US", {
-                                  minimumFractionDigits: 2,
-                                })}
+                                {formatCurrency(data.value, user.currency)}
                               </p>
                             </div>
                           );
@@ -442,7 +434,7 @@ export default function ReportsPage() {
                       style={{ backgroundColor: item.fill }}
                     />
                     <span className="truncate text-muted-foreground">
-                      {item.name}
+                      {formatCategory(item.name)}
                     </span>
                   </div>
                 ))}
@@ -451,7 +443,6 @@ export default function ReportsPage() {
           </CardContent>
         </Card>
       </div>
-
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

@@ -77,6 +77,7 @@ export function useCreateTransaction() {
     mutationFn: createTransaction,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["accounts"] });
     },
   });
 }
@@ -88,6 +89,7 @@ export function useUpdateTransaction() {
     mutationFn: updateTransaction,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["accounts"] });
     },
   });
 }
@@ -99,6 +101,7 @@ export function useDeleteTransaction() {
     mutationFn: deleteTransaction,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["accounts"] });
     },
   });
 }

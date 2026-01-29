@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       type: data.type,
       account: data.account,
       currency: data.currency as AccountCurrency,
-      category: new ObjectId(data.category),
+      category: data.category,
       amount: data.amount,
       description: data.description.trim(),
       date: new Date(data.date),
@@ -64,6 +64,23 @@ export async function POST(request: NextRequest) {
       .insertOne(transaction);
 
     transaction._id = result.insertedId;
+
+    // Reduce or increase account balances
+    if (data.type === "income") {
+      await db
+        .collection("accounts")
+        .updateOne(
+          { shortCode: data.account },
+          { $inc: { balance: data.amount } },
+        );
+    } else {
+      await db
+        .collection("accounts")
+        .updateOne(
+          { shortCode: data.account },
+          { $inc: { balance: data.amount * -1 } },
+        );
+    }
 
     return NextResponse.json(
       { transaction: sanitizeTransaction(transaction) },
