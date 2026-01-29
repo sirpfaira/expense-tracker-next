@@ -5,9 +5,9 @@ import { getCurrentUser } from "@/lib/auth";
 import {
   Transaction,
   sanitizeTransaction,
-  EXPENSE_CATEGORIES,
-  INCOME_CATEGORIES,
+  dbTransactionSchema,
 } from "@/lib/models/transaction";
+import z from "zod";
 
 export async function GET() {
   try {
@@ -19,7 +19,7 @@ export async function GET() {
     const db = await getDatabase();
     const transactions = await db
       .collection<Transaction>("transactions")
-      .find({ userId: new ObjectId(user.id) })
+      .find()
       .sort({ date: -1 })
       .toArray();
 
@@ -43,54 +43,19 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { type, category, amount, description, date } = body;
-
-    // Validate required fields
-    if (!type || !category || amount === undefined || !description || !date) {
-      return NextResponse.json(
-        { error: "All fields are required" },
-        { status: 400 },
-      );
-    }
-
-    // Validate type
-    if (!["income", "expense"].includes(type)) {
-      return NextResponse.json(
-        { error: "Invalid transaction type" },
-        { status: 400 },
-      );
-    }
-
-    // Validate category based on type
-    const validCategories =
-      type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
-    if (!validCategories.includes(category)) {
-      return NextResponse.json(
-        { error: "Invalid category for this transaction type" },
-        { status: 400 },
-      );
-    }
-
-    // Validate amount
-    if (typeof amount !== "number" || amount <= 0) {
-      return NextResponse.json(
-        { error: "Amount must be a positive number" },
-        { status: 400 },
-      );
-    }
+    const data = dbTransactionSchema.parse(body);
 
     const db = await getDatabase();
-    const now = new Date();
 
     const transaction: Transaction = {
       userId: new ObjectId(user.id),
-      type,
-      category,
-      amount,
-      description: description.trim(),
-      date: new Date(date),
-      createdAt: now,
-      updatedAt: now,
+      type: data.type,
+      account: data.account,
+      currency: data.currency,
+      category: new ObjectId(data.category),
+      amount: data.amount,
+      description: data.description.trim(),
+      date: new Date(data.date),
     };
 
     const result = await db
@@ -105,6 +70,9 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("Create transaction error:", error);
+    if (error instanceof z.ZodError) {
+      return new NextResponse(JSON.stringify(error.issues), { status: 422 });
+    }
     return NextResponse.json(
       { error: "Failed to create transaction" },
       { status: 500 },

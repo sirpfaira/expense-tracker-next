@@ -4,10 +4,10 @@ import { getDatabase } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/auth";
 import {
   Transaction,
+  dbTransactionSchema,
   sanitizeTransaction,
-  EXPENSE_CATEGORIES,
-  INCOME_CATEGORIES,
 } from "@/lib/models/transaction";
+import z from "zod";
 
 export async function GET(
   request: NextRequest,
@@ -33,7 +33,6 @@ export async function GET(
       .collection<Transaction>("transactions")
       .findOne({
         _id: new ObjectId(id),
-        userId: new ObjectId(user.id),
       });
 
     if (!transaction) {
@@ -73,42 +72,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { type, category, amount, description, date } = body;
-
-    // Validate required fields
-    if (!type || !category || amount === undefined || !description || !date) {
-      return NextResponse.json(
-        { error: "All fields are required" },
-        { status: 400 },
-      );
-    }
-
-    // Validate type
-    if (!["income", "expense"].includes(type)) {
-      return NextResponse.json(
-        { error: "Invalid transaction type" },
-        { status: 400 },
-      );
-    }
-
-    // Validate category based on type
-    const validCategories =
-      type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
-    if (!validCategories.includes(category)) {
-      return NextResponse.json(
-        { error: "Invalid category for this transaction type" },
-        { status: 400 },
-      );
-    }
-
-    // Validate amount
-    if (typeof amount !== "number" || amount <= 0) {
-      return NextResponse.json(
-        { error: "Amount must be a positive number" },
-        { status: 400 },
-      );
-    }
-
+    const data = dbTransactionSchema.parse(body);
     const db = await getDatabase();
 
     const result = await db
@@ -116,16 +80,16 @@ export async function PUT(
       .findOneAndUpdate(
         {
           _id: new ObjectId(id),
-          userId: new ObjectId(user.id),
         },
         {
           $set: {
-            type,
-            category,
-            amount,
-            description: description.trim(),
-            date: new Date(date),
-            updatedAt: new Date(),
+            type: data.type,
+            account: data.account,
+            currency: data.currency,
+            category: new ObjectId(data.category),
+            amount: data.amount,
+            description: data.description.trim(),
+            date: new Date(data.date),
           },
         },
         { returnDocument: "after" },
@@ -141,6 +105,9 @@ export async function PUT(
     return NextResponse.json({ transaction: sanitizeTransaction(result) });
   } catch (error) {
     console.error("Update transaction error:", error);
+    if (error instanceof z.ZodError) {
+      return new NextResponse(JSON.stringify(error.issues), { status: 422 });
+    }
     return NextResponse.json(
       { error: "Failed to update transaction" },
       { status: 500 },
@@ -171,7 +138,6 @@ export async function DELETE(
 
     const result = await db.collection<Transaction>("transactions").deleteOne({
       _id: new ObjectId(id),
-      userId: new ObjectId(user.id),
     });
 
     if (result.deletedCount === 0) {

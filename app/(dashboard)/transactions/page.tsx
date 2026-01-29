@@ -17,29 +17,29 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { TransactionForm } from "@/components/transactions/transaction-form";
 import { TransactionsList } from "@/components/transactions/transactions-list";
 import {
   useTransactions,
   useCreateTransaction,
 } from "@/hooks/use-transactions";
-import { TransactionType, TransactionCategory } from "@/lib/models/transaction";
+import { TransactionInput } from "@/lib/models/transaction";
 import { toast } from "sonner";
+import { useAuth } from "@/components/providers/auth-provider";
+import LoadingIndicator from "@/components/layout/loading-indicator";
+import { useCategories } from "@/hooks/use-categories";
+import { useAccounts } from "@/hooks/use-accounts";
 
 export default function TransactionsPage() {
-  const { data: transactions, isLoading: transactionsLoading } =
-    useTransactions();
+  const { user } = useAuth();
+  const { data: categories } = useCategories();
+  const { data: transactions } = useTransactions();
+  const { data: accounts } = useAccounts();
   const createMutation = useCreateTransaction();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  const handleCreate = async (data: {
-    type: TransactionType;
-    category: TransactionCategory;
-    amount: number;
-    description: string;
-    date: string;
-  }) => {
+  const handleCreate = async (data: TransactionInput) => {
     try {
       await createMutation.mutateAsync(data);
       toast.success("Transaction created successfully");
@@ -52,7 +52,7 @@ export default function TransactionsPage() {
   };
 
   return (
-    <div className="p-6">
+    <div className="flex flex-col p-6">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Transactions</h1>
@@ -75,6 +75,8 @@ export default function TransactionsPage() {
               </DialogDescription>
             </DialogHeader>
             <TransactionForm
+              categories={categories}
+              accounts={accounts}
               onSubmit={handleCreate}
               onCancel={() => setIsCreateDialogOpen(false)}
               isLoading={createMutation.isPending}
@@ -82,23 +84,25 @@ export default function TransactionsPage() {
           </DialogContent>
         </Dialog>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>All Transactions</CardTitle>
-          <CardDescription>
-            View and manage all your transactions
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {transactionsLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="size-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <TransactionsList transactions={transactions || []} />
-          )}
-        </CardContent>
-      </Card>
+      {user && transactions ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>All Transactions</CardTitle>
+            <CardDescription>
+              View and manage all your transactions
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <TransactionsList
+              transactions={transactions || []}
+              categories={categories}
+              accounts={accounts}
+            />
+          </CardContent>
+        </Card>
+      ) : (
+        <LoadingIndicator />
+      )}
     </div>
   );
 }

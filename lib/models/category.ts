@@ -117,6 +117,13 @@ export const DEFAULT_CATEGORIES: Omit<Category, "_id">[] = [
     color: "#f48f5e",
     isDefault: true,
   },
+  {
+    name: "Business",
+    type: "expense",
+    icon: "briefcase-business",
+    color: "#14b8a6",
+    isDefault: true,
+  },
   // Income categories
   {
     name: "Salary",

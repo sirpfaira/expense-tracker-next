@@ -2,20 +2,11 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+  TransactionInput,
   TransactionResponse,
-  TransactionType,
-  TransactionCategory,
 } from "@/lib/models/transaction";
 
-interface CreateTransactionInput {
-  type: TransactionType;
-  category: TransactionCategory;
-  amount: number;
-  description: string;
-  date: string;
-}
-
-interface UpdateTransactionInput extends CreateTransactionInput {
+interface TransactionUpdate extends TransactionInput {
   id: string;
 }
 
@@ -30,7 +21,7 @@ async function fetchTransactions(): Promise<TransactionResponse[]> {
 }
 
 async function createTransaction(
-  input: CreateTransactionInput,
+  input: TransactionInput,
 ): Promise<TransactionResponse> {
   const res = await fetch("/api/transactions", {
     method: "POST",
@@ -46,7 +37,7 @@ async function createTransaction(
 }
 
 async function updateTransaction(
-  input: UpdateTransactionInput,
+  input: TransactionUpdate,
 ): Promise<TransactionResponse> {
   const { id, ...rest } = input;
   const res = await fetch(`/api/transactions/${id}`, {

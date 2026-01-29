@@ -387,8 +387,8 @@ export default function CategoriesPage() {
           <CategoryForm
             formData={formData}
             setFormData={setFormData}
-            onSubmit={handleCreate}
-            submitLabel="Create Category"
+            onSubmit={handleUpdate}
+            submitLabel="Update Category"
             isSubmitting={createCategory.isPending}
           />
         </DialogContent>
@@ -562,15 +562,15 @@ const CategoryCard = ({
         )}
       </div>
     </div>
-    <div className="flex items-center gap-2">
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => openEditDialog(category)}
-      >
-        <Pencil className="size-4" />
-      </Button>
-      {!category.isDefault && (
+    {role === "admin" && (
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => openEditDialog(category)}
+        >
+          <Pencil className="size-4" />
+        </Button>
         <Button
           variant="ghost"
           size="icon"
@@ -578,7 +578,7 @@ const CategoryCard = ({
         >
           <Trash2 className="size-4 text-destructive" />
         </Button>
-      )}
-    </div>
+      </div>
+    )}
   </div>
 );

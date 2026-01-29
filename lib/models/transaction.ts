@@ -1,83 +1,106 @@
 import { ObjectId } from "mongodb";
+import { z } from "zod";
+import { AccountCurrency } from "./account";
+
+export const transactionSchema = z.object({
+  type: z.enum(["income", "expense"]),
+  category: z.string().min(1, "Category is required"),
+  account: z.string().min(1, "Account is required"),
+  amount: z.coerce.number().positive("Amount must be a positive number"),
+  description: z.string().min(1, "Description is required").max(100),
+  date: z.coerce.date(),
+});
+
+export const dbTransactionSchema = z.object({
+  type: z.enum(["income", "expense"]),
+  category: z.string().min(1, "Category is required"),
+  account: z.string().min(1, "Account is required"),
+  currency: z.string().min(1, "Currency is required"),
+  amount: z.coerce.number().positive("Amount must be a positive number"),
+  description: z.string().min(1, "Description is required").max(100),
+  date: z.coerce.date(),
+});
+
+export type TransactionFormValues = z.infer<typeof transactionSchema>;
 
 export type TransactionType = "income" | "expense";
 
-export type TransactionCategory =
-  | "food"
-  | "transportation"
-  | "entertainment"
-  | "utilities"
-  | "healthcare"
-  | "shopping"
-  | "salary"
-  | "freelance"
-  | "investment"
-  | "other";
+export interface TransactionInput {
+  type: TransactionType;
+  category: string;
+  account: string;
+  currency: string;
+  amount: number;
+  description: string;
+  date: string;
+}
 
 export interface Transaction {
   _id?: ObjectId;
   userId: ObjectId;
   type: TransactionType;
-  category: TransactionCategory;
+  category: ObjectId;
+  account: string;
+  currency: AccountCurrency;
   amount: number;
   description: string;
   date: Date;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface TransactionResponse {
   id: string;
   userId: string;
   type: TransactionType;
-  category: TransactionCategory;
+  category: string;
+  account: string;
+  currency: AccountCurrency;
   amount: number;
   description: string;
   date: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
-export function sanitizeTransaction(transaction: Transaction): TransactionResponse {
+export function sanitizeTransaction(
+  transaction: Transaction,
+): TransactionResponse {
   return {
     id: transaction._id!.toString(),
     userId: transaction.userId.toString(),
     type: transaction.type,
-    category: transaction.category,
+    category: transaction.category.toString(),
+    account: transaction.account,
+    currency: transaction.currency,
     amount: transaction.amount,
     description: transaction.description,
     date: transaction.date.toISOString(),
-    createdAt: transaction.createdAt.toISOString(),
-    updatedAt: transaction.updatedAt.toISOString(),
   };
 }
 
-export const CATEGORY_LABELS: Record<TransactionCategory, string> = {
-  food: "Food & Dining",
-  transportation: "Transportation",
-  entertainment: "Entertainment",
-  utilities: "Utilities",
-  healthcare: "Healthcare",
-  shopping: "Shopping",
-  salary: "Salary",
-  freelance: "Freelance",
-  investment: "Investment",
-  other: "Other",
-};
+// export const CATEGORY_LABELS: Record<TransactionCategory, string> = {
+//   food: "Food & Dining",
+//   transportation: "Transportation",
+//   entertainment: "Entertainment",
+//   utilities: "Utilities",
+//   healthcare: "Healthcare",
+//   shopping: "Shopping",
+//   salary: "Salary",
+//   freelance: "Freelance",
+//   investment: "Investment",
+//   other: "Other",
+// };
 
-export const EXPENSE_CATEGORIES: TransactionCategory[] = [
-  "food",
-  "transportation",
-  "entertainment",
-  "utilities",
-  "healthcare",
-  "shopping",
-  "other",
-];
+// export const EXPENSE_CATEGORIES: TransactionCategory[] = [
+//   "food",
+//   "transportation",
+//   "entertainment",
+//   "utilities",
+//   "healthcare",
+//   "shopping",
+//   "other",
+// ];
 
-export const INCOME_CATEGORIES: TransactionCategory[] = [
-  "salary",
-  "freelance",
-  "investment",
-  "other",
-];
+// export const INCOME_CATEGORIES: TransactionCategory[] = [
+//   "salary",
+//   "freelance",
+//   "investment",
+//   "other",
+// ];

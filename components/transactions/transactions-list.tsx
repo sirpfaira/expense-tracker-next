@@ -46,23 +46,30 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TransactionForm } from "./transaction-form";
 import {
+  TransactionInput,
   TransactionResponse,
   TransactionType,
-  TransactionCategory,
-  CATEGORY_LABELS,
 } from "@/lib/models/transaction";
 import {
   useUpdateTransaction,
   useDeleteTransaction,
 } from "@/hooks/use-transactions";
 import { toast } from "sonner";
-import { formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import { CategoryResponse } from "@/lib/models/category";
+import { AccountResponse } from "@/lib/models/account";
 
 interface TransactionsListProps {
   transactions: TransactionResponse[];
+  categories: CategoryResponse[] | undefined;
+  accounts: AccountResponse[] | undefined;
 }
 
-export function TransactionsList({ transactions }: TransactionsListProps) {
+export function TransactionsList({
+  transactions,
+  categories,
+  accounts,
+}: TransactionsListProps) {
   const isMobile = useIsMobile();
   const [editingTransaction, setEditingTransaction] =
     useState<TransactionResponse | null>(null);
@@ -72,13 +79,7 @@ export function TransactionsList({ transactions }: TransactionsListProps) {
   const updateMutation = useUpdateTransaction();
   const deleteMutation = useDeleteTransaction();
 
-  const handleUpdate = async (data: {
-    type: TransactionType;
-    category: TransactionCategory;
-    amount: number;
-    description: string;
-    date: string;
-  }) => {
+  const handleUpdate = async (data: TransactionInput) => {
     if (!editingTransaction) return;
 
     try {
@@ -107,14 +108,6 @@ export function TransactionsList({ transactions }: TransactionsListProps) {
         error instanceof Error ? error.message : "Failed to delete transaction",
       );
     }
-  };
-
-  const formatAmount = (amount: number, type: TransactionType) => {
-    const formatted = new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-    return type === "income" ? `+${formatted}` : `-${formatted}`;
   };
 
   if (transactions.length === 0) {
@@ -176,7 +169,7 @@ export function TransactionsList({ transactions }: TransactionsListProps) {
                         : "text-red-500"
                     }`}
                   >
-                    {formatAmount(transaction.amount, transaction.type)}
+                    {formatCurrency(transaction.amount, transaction.currency)}
                   </span>
                 </div>
               </DropdownMenuTrigger>
@@ -216,9 +209,7 @@ export function TransactionsList({ transactions }: TransactionsListProps) {
                 <TableCell>{formatDate(transaction.date)}</TableCell>
                 <TableCell>{transaction.description}</TableCell>
                 <TableCell>
-                  <Badge variant="secondary">
-                    {CATEGORY_LABELS[transaction.category]}
-                  </Badge>
+                  <Badge variant="secondary">{transaction.category}</Badge>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1.5">
@@ -237,7 +228,7 @@ export function TransactionsList({ transactions }: TransactionsListProps) {
                       : "text-red-500"
                   }`}
                 >
-                  {formatAmount(transaction.amount, transaction.type)}
+                  {formatCurrency(transaction.amount, transaction.currency)}
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
@@ -283,6 +274,8 @@ export function TransactionsList({ transactions }: TransactionsListProps) {
             </DialogDescription>
           </DialogHeader>
           <TransactionForm
+            categories={categories}
+            accounts={accounts}
             transaction={editingTransaction}
             onSubmit={handleUpdate}
             onCancel={() => setEditingTransaction(null)}

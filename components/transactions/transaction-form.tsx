@@ -1,173 +1,254 @@
 "use client";
 
 import React from "react";
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
   SelectItem,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 import {
+  AccountResponse,
+  AccountType,
+  AccountCurrency,
+  ACCOUNT_CURRENCIES,
+  ACCOUNT_TYPES,
+  AccountFormValues,
+  accountSchema,
+} from "@/lib/models/account";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  TransactionFormValues,
+  TransactionInput,
   TransactionResponse,
+  transactionSchema,
   TransactionType,
-  TransactionCategory,
-  CATEGORY_LABELS,
-  EXPENSE_CATEGORIES,
-  INCOME_CATEGORIES,
 } from "@/lib/models/transaction";
+import { CategoryResponse } from "@/lib/models/category";
 
 interface TransactionFormProps {
+  categories: CategoryResponse[] | undefined;
+  accounts: AccountResponse[] | undefined;
   transaction?: TransactionResponse | null;
-  onSubmit: (data: {
-    type: TransactionType;
-    category: TransactionCategory;
-    amount: number;
-    description: string;
-    date: string;
-  }) => void;
+  onSubmit: (data: TransactionInput) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
 
 export function TransactionForm({
+  categories,
+  accounts,
   transaction,
   onSubmit,
   onCancel,
   isLoading = false,
 }: TransactionFormProps) {
-  const [type, setType] = useState<TransactionType>(
-    transaction?.type || "expense",
-  );
-  const [category, setCategory] = useState<TransactionCategory>(
-    transaction?.category || "food",
-  );
-  const [amount, setAmount] = useState(transaction?.amount?.toString() || "");
-  const [description, setDescription] = useState(
-    transaction?.description || "",
-  );
-  const [date, setDate] = useState(
-    transaction?.date
-      ? new Date(transaction.date).toISOString().split("T")[0]
-      : new Date().toISOString().split("T")[0],
-  );
+  const form = useForm<TransactionFormValues>({
+    resolver: zodResolver(transactionSchema),
+    defaultValues: {
+      type: transaction?.type || "expense",
+      category: transaction?.category || "",
+      account: transaction?.account || "",
+      amount: transaction?.amount || 0,
+      description: transaction?.description || "",
+      date: new Date(transaction?.date || "2026-02-01") || new Date(),
+    },
+  });
 
-  const categories =
-    type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
-
-  // Reset category when type changes
-  useEffect(() => {
-    if (!categories.includes(category)) {
-      setCategory(categories[0]);
-    }
-  }, [type, category, categories]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit({
-      type,
-      category,
-      amount: parseFloat(amount),
-      description,
-      date,
-    });
+  const submitHandler = async (data: TransactionFormValues) => {
+    console.log(data);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="type">Type</Label>
-        <Select
-          value={type}
-          onValueChange={(value: TransactionType) => setType(value)}
-        >
-          <SelectTrigger id="type" className="w-full">
-            <SelectValue placeholder="Select type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="expense">Expense</SelectItem>
-            <SelectItem value="income">Income</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="category">Category</Label>
-        <Select
-          value={category}
-          onValueChange={(value: TransactionCategory) => setCategory(value)}
-        >
-          <SelectTrigger id="category" className="w-full">
-            <SelectValue placeholder="Select category" />
-          </SelectTrigger>
-          <SelectContent>
-            {categories.map((cat) => (
-              <SelectItem key={cat} value={cat}>
-                {CATEGORY_LABELS[cat]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="amount">Amount</Label>
-        <Input
-          id="amount"
-          type="number"
-          step="0.01"
-          min="0.01"
-          placeholder="0.00"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          required
+    <form id="form-transaction" onSubmit={form.handleSubmit(submitHandler)}>
+      <FieldGroup>
+        <Controller
+          name="type"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="form-transaction-type">Type</FieldLabel>
+              <Select
+                name={field.name}
+                value={field.value}
+                onValueChange={field.onChange}
+              >
+                <SelectTrigger
+                  id="form-transaction-type"
+                  aria-invalid={fieldState.invalid}
+                  className="min-w-30"
+                >
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent position="item-aligned">
+                  <SelectItem value="expense">Expense</SelectItem>
+                  <SelectItem value="income">Income</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
         />
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="description">Description</Label>
-        <Input
-          id="description"
-          type="text"
-          placeholder="Enter description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          required
+        <Controller
+          name="category"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="form-transaction-category">
+                Category
+              </FieldLabel>
+              <Select
+                name={field.name}
+                value={field.value}
+                onValueChange={field.onChange}
+              >
+                <SelectTrigger
+                  id="form-transaction-category"
+                  aria-invalid={fieldState.invalid}
+                  className="min-w-30"
+                >
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent position="item-aligned">
+                  {categories?.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
         />
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="date">Date</Label>
-        <Input
-          id="date"
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          required
+        <Controller
+          name="account"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="form-transaction-account">
+                Account
+              </FieldLabel>
+              <Select
+                name={field.name}
+                value={field.value}
+                onValueChange={field.onChange}
+              >
+                <SelectTrigger
+                  id="form-transaction-account"
+                  aria-invalid={fieldState.invalid}
+                  className="min-w-30"
+                >
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent position="item-aligned">
+                  {accounts?.map((acc) => (
+                    <SelectItem key={acc.id} value={acc.shortCode}>
+                      {acc.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
         />
-      </div>
-
-      <DialogFooter className="pt-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={isLoading}
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={isLoading}>
-          {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-          {transaction ? "Update" : "Create"}
-        </Button>
-      </DialogFooter>
+        <Controller
+          name="amount"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="form-transaction-amount">Amount</FieldLabel>
+              <Input
+                {...field}
+                id="form-transaction-amount"
+                aria-invalid={fieldState.invalid}
+                placeholder="100.00"
+                autoComplete="off"
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <Controller
+          name="description"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="form-transaction-description">
+                Description
+              </FieldLabel>
+              <Input
+                {...field}
+                id="form-transaction-description"
+                aria-invalid={fieldState.invalid}
+                placeholder="Rent"
+                autoComplete="off"
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <Controller
+          name="date"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="form-transaction-date">Date</FieldLabel>
+              <Input
+                {...field}
+                id="form-transaction-date"
+                type="date"
+                aria-invalid={fieldState.invalid}
+                value={
+                  field.value instanceof Date
+                    ? field.value.toISOString().split("T")[0]
+                    : field.value
+                }
+                onChange={(e) => field.onChange(new Date(e.target.value))}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <div className="flex justify-end space-x-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={isLoading}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" form="form-transaction" disabled={isLoading}>
+            {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+            {transaction ? "Update" : "Create"}
+          </Button>
+        </div>
+      </FieldGroup>
     </form>
   );
 }
