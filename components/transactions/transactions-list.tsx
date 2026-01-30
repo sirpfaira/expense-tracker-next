@@ -52,15 +52,17 @@ import {
   useDeleteTransaction,
 } from "@/hooks/use-transactions";
 import { toast } from "sonner";
-import { formatCategory, formatCurrency, formatDate } from "@/lib/utils";
+import { formatCategory, convertAndFormat, formatDate } from "@/lib/utils";
 import { CategoryResponse } from "@/lib/models/category";
 import { AccountResponse } from "@/lib/models/account";
 import { UserResponse } from "@/lib/models/user";
+import { RateResponse } from "@/lib/models/summary";
 
 interface TransactionsListProps {
   transactions: TransactionResponse[];
   categories: CategoryResponse[] | undefined;
   accounts: AccountResponse[] | undefined;
+  rate: RateResponse | undefined;
   user: UserResponse;
 }
 
@@ -68,6 +70,7 @@ export function TransactionsList({
   transactions,
   categories,
   accounts,
+  rate,
   user,
 }: TransactionsListProps) {
   const isMobile = useIsMobile();
@@ -158,7 +161,12 @@ export function TransactionsList({
                         : "text-red-500"
                     }`}
                   >
-                    {formatCurrency(transaction.amount, user.currency)}
+                    {convertAndFormat(
+                      transaction.amount,
+                      transaction.currency,
+                      user.currency,
+                      rate,
+                    )}
                   </span>
                 </div>
               </DropdownMenuTrigger>
@@ -223,7 +231,12 @@ export function TransactionsList({
                       : "text-red-500"
                   }`}
                 >
-                  {formatCurrency(transaction.amount, user.currency)}
+                  {convertAndFormat(
+                    transaction.amount,
+                    transaction.currency,
+                    user.currency,
+                    rate,
+                  )}
                 </TableCell>
                 {user.id === transaction.userId && (
                   <TableCell>

@@ -25,10 +25,12 @@ import { AccountFormValues } from "@/lib/models/account";
 import { toast } from "sonner";
 import { useAuth } from "@/components/providers/auth-provider";
 import LoadingIndicator from "@/components/layout/loading-indicator";
+import { useRates } from "@/hooks/use-rates";
 
 export default function AccountsPage() {
   const { user } = useAuth();
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
+  const { data: rate } = useRates();
   const createMutation = useCreateAccount();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
@@ -98,6 +100,7 @@ export default function AccountsPage() {
                 <AccountsList
                   accounts={accounts || []}
                   currency={user.currency}
+                  rate={rate}
                 />
               )}
             </CardContent>

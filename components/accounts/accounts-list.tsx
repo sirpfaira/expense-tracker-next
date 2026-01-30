@@ -27,14 +27,16 @@ import {
 } from "@/lib/models/account";
 import { useUpdateAccount, useDeleteAccount } from "@/hooks/use-accounts";
 import { toast } from "sonner";
-import { formatCurrency } from "@/lib/utils";
+import { convertAndFormat } from "@/lib/utils";
+import { RateResponse } from "@/lib/models/summary";
 
 interface AccountsListProps {
   accounts: AccountResponse[];
   currency: AccountCurrency;
+  rate: RateResponse | undefined;
 }
 
-export function AccountsList({ accounts, currency }: AccountsListProps) {
+export function AccountsList({ accounts, currency, rate }: AccountsListProps) {
   const [editingAccount, setEditingAccount] = useState<AccountResponse | null>(
     null,
   );
@@ -97,6 +99,7 @@ export function AccountsList({ accounts, currency }: AccountsListProps) {
             key={account.name}
             account={account}
             currency={currency}
+            rate={rate}
           />
         ))}
         {accounts.length === 0 && (
@@ -157,6 +160,7 @@ export function AccountsList({ accounts, currency }: AccountsListProps) {
 interface AccountCardProps {
   account: AccountResponse;
   currency: AccountCurrency;
+  rate: RateResponse | undefined;
 }
 
 const iconMap = {
@@ -165,7 +169,7 @@ const iconMap = {
   savings: PiggyBank,
 };
 
-export function AccountCard({ account, currency }: AccountCardProps) {
+export function AccountCard({ account, currency, rate }: AccountCardProps) {
   const Icon = iconMap[account.type] || CreditCard;
 
   return (
@@ -186,7 +190,7 @@ export function AccountCard({ account, currency }: AccountCardProps) {
       </div>
       <div className="text-right">
         <p className="font-bold text-lg">
-          {formatCurrency(account.balance, currency)}
+          {convertAndFormat(account.balance, account.currency, currency, rate)}
         </p>
       </div>
     </div>

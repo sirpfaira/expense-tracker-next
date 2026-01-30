@@ -36,12 +36,15 @@ import { useAccounts } from "@/hooks/use-accounts";
 import { CategoryResponse } from "@/lib/models/category";
 import { AccountResponse } from "@/lib/models/account";
 import { UserResponse } from "@/lib/models/user";
+import { useRates } from "@/hooks/use-rates";
+import { RateResponse } from "@/lib/models/summary";
 
 export default function TransactionsPage() {
   const { user } = useAuth();
   const { data: categories } = useCategories();
   const { data: transactions } = useTransactions();
   const { data: accounts } = useAccounts();
+  const { data: rate } = useRates();
   const createMutation = useCreateTransaction();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
@@ -95,6 +98,7 @@ export default function TransactionsPage() {
           transactions={transactions || []}
           categories={categories}
           accounts={accounts}
+          rate={rate}
           user={user}
         />
       ) : (
@@ -108,12 +112,14 @@ interface TransactionsFilterProps {
   transactions: TransactionResponse[];
   categories: CategoryResponse[] | undefined;
   accounts: AccountResponse[] | undefined;
+  rate: RateResponse | undefined;
   user: UserResponse;
 }
 function TransactionsFilter({
   transactions,
   categories,
   accounts,
+  rate,
   user,
 }: TransactionsFilterProps) {
   // 1. Set current month/year as default state
@@ -174,6 +180,7 @@ function TransactionsFilter({
           transactions={filteredTransactions || []}
           categories={categories}
           accounts={accounts}
+          rate={rate}
           user={user}
         />
       </CardContent>

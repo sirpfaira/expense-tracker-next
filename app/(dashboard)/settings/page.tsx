@@ -58,7 +58,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import CurrencyForm from "@/components/settings/currency-form";
-import { CurrencyFormValues } from "@/lib/models/currency";
+import { CurrencyFormValues } from "@/lib/models/summary";
 
 export default function SettingsPage() {
   const { user, logout, refetchUser } = useAuth();

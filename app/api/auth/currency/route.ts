@@ -1,5 +1,5 @@
 import { requireAuth } from "@/lib/auth";
-import { currencySchema } from "@/lib/models/currency";
+import { currencySchema } from "@/lib/models/summary";
 import { getDatabase } from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 import z from "zod";

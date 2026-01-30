@@ -43,7 +43,12 @@ import {
   Calendar,
 } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
-import { formatCategory, formatCurrency } from "@/lib/utils";
+import { formatCategory, convertAndFormat, convertAmount } from "@/lib/utils";
+import { useRates } from "@/hooks/use-rates";
+import { TransactionResponse } from "@/lib/models/transaction";
+import { UserResponse } from "@/lib/models/user";
+import { RateResponse } from "@/lib/models/summary";
+import LoadingIndicator from "@/components/layout/loading-indicator";
 
 const CHART_COLORS = [
   "#2563eb", // blue
@@ -62,7 +67,27 @@ type TimeRange = "7d" | "30d" | "90d" | "1y" | "all";
 
 export default function ReportsPage() {
   const { user } = useAuth();
-  const { data: transactions, isLoading } = useTransactions();
+  const { data: transactions } = useTransactions();
+  const { data: rate } = useRates();
+
+  return (
+    <>
+      {user && transactions && rate ? (
+        <ReportsView transactions={transactions} user={user} rate={rate} />
+      ) : (
+        <LoadingIndicator />
+      )}
+    </>
+  );
+}
+
+type ReportsViewProps = {
+  transactions: TransactionResponse[];
+  user: UserResponse;
+  rate: RateResponse;
+};
+
+function ReportsView({ transactions, user, rate }: ReportsViewProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>("30d");
 
   const filteredTransactions = useMemo(() => {
@@ -94,10 +119,18 @@ export default function ReportsPage() {
   const summaryStats = useMemo(() => {
     const income = filteredTransactions
       .filter((t) => t.type === "income")
-      .reduce((sum, t) => sum + t.amount, 0);
+      .reduce(
+        (sum, t) =>
+          sum + convertAmount(t.amount, t.currency, user.currency, rate),
+        0,
+      );
     const expenses = filteredTransactions
       .filter((t) => t.type === "expense")
-      .reduce((sum, t) => sum + t.amount, 0);
+      .reduce(
+        (sum, t) =>
+          sum + convertAmount(t.amount, t.currency, user.currency, rate),
+        0,
+      );
     const balance = income - expenses;
     const transactionCount = filteredTransactions.length;
 
@@ -111,7 +144,8 @@ export default function ReportsPage() {
       .filter((t) => t.type === "expense")
       .forEach((t) => {
         expensesByCategory[t.category] =
-          (expensesByCategory[t.category] || 0) + t.amount;
+          (expensesByCategory[t.category] || 0) +
+          convertAmount(t.amount, t.currency, user.currency, rate);
       });
 
     return Object.entries(expensesByCategory)
@@ -136,9 +170,19 @@ export default function ReportsPage() {
       }
 
       if (t.type === "income") {
-        monthlyTotals[monthKey].income += t.amount;
+        monthlyTotals[monthKey].income += convertAmount(
+          t.amount,
+          t.currency,
+          user.currency,
+          rate,
+        );
       } else {
-        monthlyTotals[monthKey].expenses += t.amount;
+        monthlyTotals[monthKey].expenses += convertAmount(
+          t.amount,
+          t.currency,
+          user.currency,
+          rate,
+        );
       }
     });
 
@@ -176,7 +220,9 @@ export default function ReportsPage() {
       .filter((t) => t.type === "expense")
       .forEach((t) => {
         const dateKey = t.date.split("T")[0];
-        dailyTotals[dateKey] = (dailyTotals[dateKey] || 0) + t.amount;
+        dailyTotals[dateKey] =
+          (dailyTotals[dateKey] || 0) +
+          convertAmount(t.amount, t.currency, user.currency, rate);
       });
 
     return Object.entries(dailyTotals)
@@ -190,14 +236,6 @@ export default function ReportsPage() {
         amount,
       }));
   }, [filteredTransactions]);
-
-  if (isLoading || !user) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="size-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
 
   return (
     <div className="p-6 space-y-6">
@@ -230,7 +268,12 @@ export default function ReportsPage() {
           <CardHeader className="pb-2">
             <CardDescription>Total Income</CardDescription>
             <CardTitle className="text-2xl text-green-600">
-              {formatCurrency(summaryStats.income, user.currency)}
+              {convertAndFormat(
+                summaryStats.income,
+                user.currency,
+                user.currency,
+                rate,
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -247,7 +290,12 @@ export default function ReportsPage() {
           <CardHeader className="pb-2">
             <CardDescription>Total Expenses</CardDescription>
             <CardTitle className="text-2xl text-red-600">
-              {formatCurrency(summaryStats.expenses, user.currency)}
+              {convertAndFormat(
+                summaryStats.expenses,
+                user.currency,
+                user.currency,
+                rate,
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -269,7 +317,12 @@ export default function ReportsPage() {
             <CardTitle
               className={`text-2xl ${summaryStats.balance >= 0 ? "text-green-600" : "text-red-600"}`}
             >
-              {formatCurrency(summaryStats.balance, user.currency)}
+              {convertAndFormat(
+                summaryStats.balance,
+                user.currency,
+                user.currency,
+                rate,
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -393,7 +446,12 @@ export default function ReportsPage() {
                                 {formatCategory(data.name)}
                               </p>
                               <p className="text-sm text-muted-foreground">
-                                {formatCurrency(data.value, user.currency)}
+                                {convertAndFormat(
+                                  data.value,
+                                  user.currency,
+                                  user.currency,
+                                  rate,
+                                )}
                               </p>
                             </div>
                           );

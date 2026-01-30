@@ -10,7 +10,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { CurrencyFormValues, currencySchema } from "@/lib/models/currency";
+import { CurrencyFormValues, currencySchema } from "@/lib/models/summary";
 import { Loader2 } from "lucide-react";
 
 type CurrencyFormProps = {

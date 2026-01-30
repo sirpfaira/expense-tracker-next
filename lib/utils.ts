@@ -1,12 +1,13 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { AccountCurrency, AccountType } from "./models/account";
+import { RateResponse } from "./models/summary";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const formatCurrency = (amount: number, currency: AccountCurrency) => {
+const formatCurrency = (amount: number, currency: AccountCurrency) => {
   if (currency === "zar") {
     return new Intl.NumberFormat("en-ZA", {
       style: "currency",
@@ -18,6 +19,35 @@ export const formatCurrency = (amount: number, currency: AccountCurrency) => {
       currency: "USD",
     }).format(amount);
   }
+};
+
+export const convertAmount = (
+  amount: number,
+  amountCurrency: AccountCurrency,
+  userCurrency: AccountCurrency,
+  rate: RateResponse | undefined,
+) => {
+  let converted = amount;
+
+  if (rate) {
+    if (amountCurrency === "zar" && userCurrency === "usd") {
+      converted = amount * (1 / rate.value);
+    }
+    if (amountCurrency === "usd" && userCurrency === "zar") {
+      converted = amount * rate.value;
+    }
+  }
+  return converted;
+};
+
+export const convertAndFormat = (
+  amount: number,
+  amountCurrency: AccountCurrency,
+  userCurrency: AccountCurrency,
+  rate: RateResponse | undefined,
+) => {
+  const converted = convertAmount(amount, amountCurrency, userCurrency, rate);
+  return formatCurrency(converted, userCurrency);
 };
 
 export const formatDate = (
