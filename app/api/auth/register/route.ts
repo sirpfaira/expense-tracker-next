@@ -16,7 +16,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, email, password } = validation.data;
+    const { name, email, password, inviteCode } = validation.data;
+    if (inviteCode !== process.env.INVITE_CODE) {
+      return NextResponse.json(
+        { error: "Invalid invitation code!" },
+        { status: 400 },
+      );
+    }
+
     const db = await getDatabase();
     const usersCollection = db.collection<User>("users");
 

@@ -31,9 +31,10 @@ export default function RegisterPage() {
   } = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema),
     // defaultValues: {
-    //   name: "First User",
-    //   email: "user1@example.com",
-    //   password: "password123",
+    //   name: "",
+    //   email: "",
+    //   password: "",
+    //   inviteCode: "",
     // },
   });
 
@@ -125,6 +126,19 @@ export default function RegisterPage() {
                 {errors.confirmPassword && (
                   <span className="text-sm text-destructive">
                     {errors.confirmPassword.message}
+                  </span>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="inviteCode">Invitation Code</Label>
+                <Input
+                  id="inviteCode"
+                  type="text"
+                  {...register("inviteCode")}
+                />
+                {errors.inviteCode && (
+                  <span className="text-sm text-destructive">
+                    {errors.inviteCode.message}
                   </span>
                 )}
               </div>
