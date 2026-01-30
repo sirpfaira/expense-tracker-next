@@ -10,6 +10,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +29,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -45,9 +53,12 @@ import {
   Download,
   Bell,
   Palette,
+  DollarSign,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import CurrencyForm from "@/components/settings/currency-form";
+import { CurrencyFormValues } from "@/lib/models/currency";
 
 export default function SettingsPage() {
   const { user, logout, refetchUser } = useAuth();
@@ -57,8 +68,11 @@ export default function SettingsPage() {
   // Profile state
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileName, setProfileName] = useState(user?.name || "");
-  const [profileEmail, setProfileEmail] = useState(user?.email || "");
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+
+  // Preferences state
+  const [isUpdatingCurrency, setIsUpdatingCurrency] = useState(false);
+  const [isCurrencyDialogOpen, setIsCurrencyDialogOpen] = useState(false);
 
   // Password state
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -82,7 +96,7 @@ export default function SettingsPage() {
   };
 
   const handleUpdateProfile = async () => {
-    if (!profileName.trim() || !profileEmail.trim()) {
+    if (!profileName.trim()) {
       toast.error("Name and email are required");
       return;
     }
@@ -94,7 +108,6 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: profileName.trim(),
-          email: profileEmail.trim(),
         }),
       });
 
@@ -216,7 +229,6 @@ export default function SettingsPage() {
         exportDate: new Date().toISOString(),
         user: {
           name: user?.name,
-          email: user?.email,
         },
         transactions: transactions.transactions || [],
         categories: categories.categories || [],
@@ -238,6 +250,34 @@ export default function SettingsPage() {
       toast.success("Data exported successfully");
     } catch {
       toast.error("Failed to export data");
+    }
+  };
+
+  const handleUpdateCurrency = async (values: CurrencyFormValues) => {
+    setIsUpdatingCurrency(true);
+    try {
+      const res = await fetch("/api/auth/currency", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to update currency");
+      }
+
+      await refetchUser();
+      toast.success("Currency updated successfully");
+      setIsCurrencyDialogOpen(false);
+      setIsUpdatingCurrency(false);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update profile",
+      );
+    } finally {
+      setIsUpdatingCurrency(false);
     }
   };
 
@@ -268,12 +308,8 @@ export default function SettingsPage() {
             </Avatar>
             <div>
               <p className="font-semibold text-foreground">{user?.name}</p>
-              <p className="text-sm text-muted-foreground">{user?.email}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Member since{" "}
-                {user?.createdAt
-                  ? new Date(user.createdAt).toLocaleDateString()
-                  : "N/A"}
+                Currency: {user?.currency.toUpperCase() || "N/A"}
               </p>
             </div>
           </div>
@@ -288,15 +324,6 @@ export default function SettingsPage() {
                   id="name"
                   value={profileName}
                   onChange={(e) => setProfileName(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={profileEmail}
-                  onChange={(e) => setProfileEmail(e.target.value)}
                 />
               </div>
               <div className="flex gap-2">
@@ -316,7 +343,6 @@ export default function SettingsPage() {
                   onClick={() => {
                     setIsEditingProfile(false);
                     setProfileName(user?.name || "");
-                    setProfileEmail(user?.email || "");
                   }}
                 >
                   Cancel
@@ -326,13 +352,9 @@ export default function SettingsPage() {
           ) : (
             <div className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
-                <div>
+                <div className="px-1">
                   <Label className="text-muted-foreground">Name</Label>
                   <p className="font-medium">{user?.name}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Email</Label>
-                  <p className="font-medium">{user?.email}</p>
                 </div>
               </div>
               <Button
@@ -385,6 +407,40 @@ export default function SettingsPage() {
           <CardDescription>Customize your experience</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <DollarSign className="size-5 text-muted-foreground" />
+              <div>
+                <p className="font-medium">Currency</p>
+                <p className="text-sm text-muted-foreground">
+                  Your preferred currency for transactions
+                </p>
+              </div>
+            </div>
+            <Dialog
+              open={isCurrencyDialogOpen}
+              onOpenChange={setIsCurrencyDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Button variant="outline">Edit</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-106.25">
+                <DialogHeader>
+                  <DialogTitle>Edit currency</DialogTitle>
+                  <DialogDescription>
+                    Make changes to your preferred currency. Click save when
+                    you&apos;re done.
+                  </DialogDescription>
+                </DialogHeader>
+                <CurrencyForm
+                  onSubmit={handleUpdateCurrency}
+                  onCancel={() => setIsCurrencyDialogOpen(false)}
+                  isLoading={isUpdatingCurrency}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
+          <Separator />
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Bell className="size-5 text-muted-foreground" />

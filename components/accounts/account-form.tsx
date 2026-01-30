@@ -1,27 +1,14 @@
 "use client";
-
-import React from "react";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
   SelectItem,
-  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Field,
   FieldContent,
@@ -30,12 +17,9 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { DialogFooter } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 import {
   AccountResponse,
-  AccountType,
-  AccountCurrency,
   ACCOUNT_CURRENCIES,
   ACCOUNT_TYPES,
   AccountFormValues,
