@@ -54,11 +54,14 @@ import {
   Bell,
   Palette,
   DollarSign,
+  SquarePen,
+  ChevronRight,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import CurrencyForm from "@/components/settings/currency-form";
 import { CurrencyFormValues } from "@/lib/models/summary";
+import { Switch } from "@/components/ui/switch";
 
 export default function SettingsPage() {
   const { user, logout, refetchUser } = useAuth();
@@ -282,7 +285,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="p-6 max-w-3xl space-y-6">
+    <div className="p-2 md:p-6 max-w-3xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Settings</h1>
         <p className="text-muted-foreground">
@@ -380,7 +383,7 @@ export default function SettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-medium">Password</p>
               <p className="text-sm text-muted-foreground">
@@ -413,7 +416,7 @@ export default function SettingsPage() {
               <div>
                 <p className="font-medium">Currency</p>
                 <p className="text-sm text-muted-foreground">
-                  Your preferred currency for transactions
+                  Set preferred currency
                 </p>
               </div>
             </div>
@@ -422,7 +425,9 @@ export default function SettingsPage() {
               onOpenChange={setIsCurrencyDialogOpen}
             >
               <DialogTrigger asChild>
-                <Button variant="outline">Edit</Button>
+                <Button variant="ghost">
+                  <SquarePen className="size-5 text-muted-foreground" />
+                </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-106.25">
                 <DialogHeader>
@@ -433,6 +438,7 @@ export default function SettingsPage() {
                   </DialogDescription>
                 </DialogHeader>
                 <CurrencyForm
+                  user={user}
                   onSubmit={handleUpdateCurrency}
                   onCancel={() => setIsCurrencyDialogOpen(false)}
                   isLoading={isUpdatingCurrency}
@@ -451,7 +457,7 @@ export default function SettingsPage() {
                 </p>
               </div>
             </div>
-            <Badge variant="secondary">Coming Soon</Badge>
+            <Switch id="notifications" className="mx-2" />
           </div>
           <Separator />
           <div className="flex items-center justify-between">
@@ -479,7 +485,7 @@ export default function SettingsPage() {
           <CardDescription>Export and manage your data</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-medium">Export Data</p>
               <p className="text-sm text-muted-foreground">
@@ -506,7 +512,7 @@ export default function SettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-medium">Sign Out</p>
               <p className="text-sm text-muted-foreground">
@@ -519,7 +525,7 @@ export default function SettingsPage() {
             </Button>
           </div>
           <Separator />
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-medium text-destructive">Delete Account</p>
               <p className="text-sm text-muted-foreground">

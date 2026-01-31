@@ -250,7 +250,7 @@ function ReportsView({ transactions, user, rate }: ReportsViewProps) {
           value={timeRange}
           onValueChange={(v) => setTimeRange(v as TimeRange)}
         >
-          <SelectTrigger className="w-40">
+          <SelectTrigger className="w-full md:w-40">
             <Calendar className="size-4 mr-2" />
             <SelectValue />
           </SelectTrigger>
