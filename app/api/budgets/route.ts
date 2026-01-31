@@ -1,66 +1,21 @@
 import { NextResponse } from "next/server";
 import { getDatabase } from "@/lib/mongodb";
 import { requireAuth } from "@/lib/auth";
-import { ObjectId } from "mongodb";
-import {
-  Budget,
-  sanitizeBudget,
-  getPeriodDateRange,
-  BudgetWithSpending,
-} from "@/lib/models/budget";
-import { Transaction } from "@/lib/models/transaction";
+import { Budget, budgetSchema, sanitizeBudget } from "@/lib/models/budget";
+import z from "zod";
 
 export async function GET() {
   try {
     const user = await requireAuth();
     const db = await getDatabase();
-
     const budgets = await db
       .collection<Budget>("budgets")
-      .find({ userId: new ObjectId(user.id), isActive: true })
-      .sort({ createdAt: -1 })
+      .find()
+      .sort({
+        period: -1,
+      })
       .toArray();
-
-    // Calculate spending for each budget
-    const budgetsWithSpending: BudgetWithSpending[] = await Promise.all(
-      budgets.map(async (budget) => {
-        const { start, end } = getPeriodDateRange(
-          budget.period,
-          budget.startDate,
-        );
-
-        const matchQuery: Record<string, unknown> = {
-          userId: new ObjectId(user.id),
-          type: "expense",
-          date: { $gte: start, $lt: end },
-        };
-
-        if (budget.categoryId) {
-          matchQuery.categoryId = budget.categoryId;
-        }
-
-        const result = await db
-          .collection<Transaction>("transactions")
-          .aggregate([
-            { $match: matchQuery },
-            { $group: { _id: null, total: { $sum: "$amount" } } },
-          ])
-          .toArray();
-
-        const spent = result[0]?.total || 0;
-        const remaining = Math.max(0, budget.amount - spent);
-        const percentage = Math.min(100, (spent / budget.amount) * 100);
-
-        return {
-          ...sanitizeBudget(budget),
-          spent,
-          remaining,
-          percentage,
-        };
-      }),
-    );
-
-    return NextResponse.json({ budgets: budgetsWithSpending });
+    return NextResponse.json({ budgets: budgets.map(sanitizeBudget) });
   } catch (error) {
     if (error instanceof Error && error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -75,55 +30,20 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const user = await requireAuth();
+    await requireAuth();
     const body = await request.json();
-
-    const { name, amount, period, categoryId, startDate } = body;
-
-    if (!name || !amount || !period) {
-      return NextResponse.json(
-        { error: "Name, amount, and period are required" },
-        { status: 400 },
-      );
-    }
-
-    if (!["weekly", "monthly", "yearly"].includes(period)) {
-      return NextResponse.json(
-        { error: "Period must be weekly, monthly, or yearly" },
-        { status: 400 },
-      );
-    }
-
-    if (amount <= 0) {
-      return NextResponse.json(
-        { error: "Amount must be greater than 0" },
-        { status: 400 },
-      );
-    }
+    const data = budgetSchema.parse(body);
 
     const db = await getDatabase();
-    const now = new Date();
-
-    const budget: Budget = {
-      userId: new ObjectId(user.id),
-      categoryId: categoryId ? new ObjectId(categoryId) : null,
-      name: name.trim(),
-      amount: Number(amount),
-      period,
-      startDate: startDate ? new Date(startDate) : now,
-      isActive: true,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    const result = await db.collection<Budget>("budgets").insertOne(budget);
-    budget._id = result.insertedId;
-
+    const result = await db.collection<Budget>("budgets").insertOne(data);
     return NextResponse.json(
-      { budget: sanitizeBudget(budget) },
+      { budget: sanitizeBudget({ ...data, _id: result.insertedId }) },
       { status: 201 },
     );
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return new NextResponse(JSON.stringify(error.issues), { status: 422 });
+    }
     if (error instanceof Error && error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

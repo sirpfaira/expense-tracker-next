@@ -2,14 +2,15 @@ import { NextResponse } from "next/server";
 import { getDatabase } from "@/lib/mongodb";
 import { requireAuth } from "@/lib/auth";
 import { ObjectId } from "mongodb";
-import { Budget, sanitizeBudget } from "@/lib/models/budget";
+import { Budget, budgetSchema, sanitizeBudget } from "@/lib/models/budget";
+import z from "zod";
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const user = await requireAuth();
+    await requireAuth();
     const { id } = await params;
 
     if (!ObjectId.isValid(id)) {
@@ -19,7 +20,6 @@ export async function GET(
     const db = await getDatabase();
     const budget = await db.collection<Budget>("budgets").findOne({
       _id: new ObjectId(id),
-      userId: new ObjectId(user.id),
     });
 
     if (!budget) {
@@ -44,28 +44,19 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const user = await requireAuth();
+    await requireAuth();
     const { id } = await params;
-    const body = await request.json();
 
     if (!ObjectId.isValid(id)) {
       return NextResponse.json({ error: "Invalid budget ID" }, { status: 400 });
     }
-
-    const { name, amount, period, categoryId, startDate, isActive } = body;
-
-    if (!name || !amount || !period) {
-      return NextResponse.json(
-        { error: "Name, amount, and period are required" },
-        { status: 400 },
-      );
-    }
+    const body = await request.json();
+    const data = budgetSchema.parse(body);
 
     const db = await getDatabase();
 
     const existingBudget = await db.collection<Budget>("budgets").findOne({
       _id: new ObjectId(id),
-      userId: new ObjectId(user.id),
     });
 
     if (!existingBudget) {
@@ -73,16 +64,11 @@ export async function PUT(
     }
 
     const result = await db.collection<Budget>("budgets").findOneAndUpdate(
-      { _id: new ObjectId(id), userId: new ObjectId(user.id) },
+      { _id: new ObjectId(id) },
       {
         $set: {
-          name: name.trim(),
-          amount: Number(amount),
-          period,
-          categoryId: categoryId ? new ObjectId(categoryId) : null,
-          startDate: startDate ? new Date(startDate) : existingBudget.startDate,
-          isActive: isActive !== undefined ? isActive : existingBudget.isActive,
-          updatedAt: new Date(),
+          period: data.period,
+          expenses: data.expenses,
         },
       },
       { returnDocument: "after" },
@@ -94,6 +80,9 @@ export async function PUT(
 
     return NextResponse.json({ budget: sanitizeBudget(result) });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return new NextResponse(JSON.stringify(error.issues), { status: 422 });
+    }
     if (error instanceof Error && error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -110,7 +99,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const user = await requireAuth();
+    await requireAuth();
     const { id } = await params;
 
     if (!ObjectId.isValid(id)) {
@@ -121,7 +110,6 @@ export async function DELETE(
 
     const result = await db.collection<Budget>("budgets").deleteOne({
       _id: new ObjectId(id),
-      userId: new ObjectId(user.id),
     });
 
     if (result.deletedCount === 0) {

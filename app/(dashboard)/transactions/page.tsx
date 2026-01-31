@@ -2,13 +2,6 @@
 
 import { useMemo, useState } from "react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -61,9 +54,9 @@ export default function TransactionsPage() {
   };
 
   return (
-    <div className="flex flex-col p-2 md:p-6">
-      <div className="flex items-center justify-between mb-8">
-        <div className="px-1">
+    <div className="flex flex-col space-y-3 p-2 md:p-6">
+      <div className="flex items-center justify-between">
+        <div className="md:px-1">
           <h1 className="text-2xl font-bold text-foreground">Transactions</h1>
           <p className="text-muted-foreground text-sm">
             Manage your income and expenses
@@ -155,35 +148,26 @@ function TransactionsFilter({
     year: "numeric",
   });
   return (
-    <Card>
-      <CardHeader className="px-0">
-        <div className="flex flex-col space-y-2 md:flex-row md:justify-between">
-          <div className="flex flex-col px-5">
-            <CardTitle>All Transactions</CardTitle>
-            <CardDescription>
-              View and manage all your transactions here
-            </CardDescription>
-          </div>
-          <div className="flex space-x-2 justify-between items-center text-muted-foreground pl-1 pr-3">
-            <Button variant={"ghost"} size={"icon"} onClick={handlePrevMonth}>
-              <ChevronLeft className="size-6" />
-            </Button>
-            <h2 className="font-medium">Showing {monthLabel}</h2>
-            <Button variant={"ghost"} size={"icon"} onClick={handleNextMonth}>
-              <ChevronRight className="size-6" />
-            </Button>
-          </div>
+    <div className="flex flex-col space-y-3">
+      <div className="flex items-center justify-between text-muted-foreground md:pl-2">
+        <p className="font-medium text-lg">Month</p>
+        <div className="flex space-x-2 justify-between items-center">
+          <Button variant={"ghost"} size={"icon"} onClick={handlePrevMonth}>
+            <ChevronLeft className="size-6" />
+          </Button>
+          <h2 className="font-medium">{monthLabel}</h2>
+          <Button variant={"ghost"} size={"icon"} onClick={handleNextMonth}>
+            <ChevronRight className="size-6" />
+          </Button>
         </div>
-      </CardHeader>
-      <CardContent>
-        <TransactionsList
-          transactions={filteredTransactions || []}
-          categories={categories}
-          accounts={accounts}
-          rate={rate}
-          user={user}
-        />
-      </CardContent>
-    </Card>
+      </div>
+      <TransactionsList
+        transactions={filteredTransactions || []}
+        categories={categories}
+        accounts={accounts}
+        rate={rate}
+        user={user}
+      />
+    </div>
   );
 }

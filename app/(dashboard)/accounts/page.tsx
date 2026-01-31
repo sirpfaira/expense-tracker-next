@@ -2,13 +2,6 @@
 
 import { useState } from "react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -49,12 +42,12 @@ export default function AccountsPage() {
   return (
     <>
       {user && accounts ? (
-        <div className="p-2 md:p-6">
-          <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col space-y-4 p-2 md:p-6">
+          <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-foreground">Accounts</h1>
               <p className="text-muted-foreground text-sm">
-                Manage your income and expenses
+                View and manage all your accounts
               </p>
             </div>
             {user.role === "admin" && (
@@ -84,27 +77,18 @@ export default function AccountsPage() {
               </Dialog>
             )}
           </div>
-          <Card>
-            <CardHeader>
-              <CardTitle>All Accounts</CardTitle>
-              <CardDescription>
-                View and manage all your accounts
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {accountsLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="size-8 animate-spin text-muted-foreground" />
-                </div>
-              ) : (
-                <AccountsList
-                  accounts={accounts || []}
-                  currency={user.currency}
-                  rate={rate}
-                />
-              )}
-            </CardContent>
-          </Card>
+          {accountsLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="size-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <AccountsList
+              accounts={accounts || []}
+              currency={user.currency}
+              rate={rate}
+              user={user}
+            />
+          )}
         </div>
       ) : (
         <LoadingIndicator />

@@ -30,16 +30,24 @@ import { useRates } from "@/hooks/use-rates";
 import { TransactionResponse } from "@/lib/models/transaction";
 import { UserResponse } from "@/lib/models/user";
 import { RateResponse } from "@/lib/models/summary";
+import { useAccounts } from "@/hooks/use-accounts";
+import { AccountResponse } from "@/lib/models/account";
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { data: transactions } = useTransactions();
+  const { data: accounts } = useAccounts();
   const { data: rate } = useRates();
 
   return (
     <>
-      {user && transactions && rate ? (
-        <DashboardView transactions={transactions} user={user} rate={rate} />
+      {user && transactions && accounts && rate ? (
+        <DashboardView
+          transactions={transactions}
+          accounts={accounts}
+          user={user}
+          rate={rate}
+        />
       ) : (
         <LoadingIndicator />
       )}
@@ -49,11 +57,17 @@ export default function DashboardPage() {
 
 type DashboardViewProps = {
   transactions: TransactionResponse[];
+  accounts: AccountResponse[];
   user: UserResponse;
   rate: RateResponse;
 };
 
-function DashboardView({ transactions, user, rate }: DashboardViewProps) {
+function DashboardView({
+  transactions,
+  accounts,
+  user,
+  rate,
+}: DashboardViewProps) {
   const totalIncome =
     transactions
       ?.filter((t) => t.type === "income")
@@ -72,12 +86,20 @@ function DashboardView({ transactions, user, rate }: DashboardViewProps) {
         0,
       ) || 0;
 
-  const balance = totalIncome - totalExpenses;
+  // const balance = totalIncome - totalExpenses;
+  const balance =
+    accounts
+      ?.filter((acc) => acc.showInReports)
+      .reduce(
+        (sum, acc) =>
+          sum + convertAmount(acc.balance, acc.currency, user.currency, rate),
+        0,
+      ) || 0;
 
   const recentTransactions = transactions?.slice(0, 5) || [];
 
   return (
-    <div className="flex flex-col space-y-8 p-2 md:p-6">
+    <div className="flex flex-col space-y-6 p-2 md:p-6">
       <div className="px-1">
         <h1 className="text-2xl font-bold text-foreground">
           Welcome Back, {user.name?.split(" ")[0]}

@@ -47,11 +47,6 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
-  BudgetWithSpending,
-  BudgetPeriod,
-  PERIOD_LABELS,
-} from "@/lib/models/budget";
-import {
   CreditCard,
   Plus,
   Pencil,
@@ -62,27 +57,37 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react";
+import { BudgetExpense, BudgetResponse } from "@/lib/models/budget";
+import { useTransactions } from "@/hooks/use-transactions";
 
 interface BudgetFormData {
-  name: string;
-  amount: string;
-  period: BudgetPeriod;
-  categoryId: string | null;
+  period: number;
+  expenses: BudgetExpense[];
 }
 
 export default function BudgetsPage() {
   const { data: budgets, isLoading } = useBudgets();
   const { data: categories } = useCategories();
+  const { data: transactions } = useTransactions();
   const createBudget = useCreateBudget();
   const updateBudget = useUpdateBudget();
   const deleteBudget = useDeleteBudget();
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingBudget, setEditingBudget] = useState<BudgetWithSpending | null>(
+  const [editingBudget, setEditingBudget] = useState<BudgetResponse | null>(
     null,
   );
-  const [deletingBudget, setDeletingBudget] =
-    useState<BudgetWithSpending | null>(null);
+  const [deletingBudget, setDeletingBudget] = useState<BudgetResponse | null>(
+    null,
+  );
+
+  Add budget expenses to current or upcoming months 
+  Remove adding budget expenses feature for previous past months
+  on update check if budget with that period already exists and overwrite it otherwise create new onemptied
+
+  Research on how to use zod with array values and react hook form
+
+  
   const [formData, setFormData] = useState<BudgetFormData>({
     name: "",
     amount: "",

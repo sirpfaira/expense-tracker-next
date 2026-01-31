@@ -132,7 +132,7 @@ export function TransactionsList({
   return (
     <div className="flex flex-col">
       {isMobile ? (
-        <div className="flex flex-col divide-y divide-muted border-y border-muted">
+        <div className="flex flex-col divide-y divide-muted border-y border-muted pr-3 md:pr-0">
           {transactions.map((transaction) => (
             <DropdownMenu key={transaction.id}>
               <DropdownMenuTrigger asChild>
@@ -158,7 +158,7 @@ export function TransactionsList({
                     className={`font-medium text-sm ${
                       transaction.type === "income"
                         ? "text-emerald-600"
-                        : "text-red-500"
+                        : "text-destructive"
                     }`}
                   >
                     {convertAndFormat(

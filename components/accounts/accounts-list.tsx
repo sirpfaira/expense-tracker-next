@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +19,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Check,
+  CheckCheck,
+  EllipsisVertical,
+  PencilIcon,
+  ShareIcon,
+  TrashIcon,
+} from "lucide-react";
 import { ArrowDownCircle, CreditCard, Banknote, PiggyBank } from "lucide-react";
 import { AccountForm } from "./account-form";
 import {
@@ -29,14 +38,66 @@ import { useUpdateAccount, useDeleteAccount } from "@/hooks/use-accounts";
 import { toast } from "sonner";
 import { convertAndFormat } from "@/lib/utils";
 import { RateResponse } from "@/lib/models/summary";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { UserResponse } from "@/lib/models/user";
 
 interface AccountsListProps {
   accounts: AccountResponse[];
   currency: AccountCurrency;
   rate: RateResponse | undefined;
+  user: UserResponse;
 }
 
-export function AccountsList({ accounts, currency, rate }: AccountsListProps) {
+export function AccountsList({
+  accounts,
+  currency,
+  rate,
+  user,
+}: AccountsListProps) {
   const [editingAccount, setEditingAccount] = useState<AccountResponse | null>(
     null,
   );
@@ -100,6 +161,9 @@ export function AccountsList({ accounts, currency, rate }: AccountsListProps) {
             account={account}
             currency={currency}
             rate={rate}
+            user={user}
+            setEditingAccount={setEditingAccount}
+            setDeletingAccount={setDeletingAccount}
           />
         ))}
         {accounts.length === 0 && (
@@ -161,6 +225,9 @@ interface AccountCardProps {
   account: AccountResponse;
   currency: AccountCurrency;
   rate: RateResponse | undefined;
+  user: UserResponse;
+  setEditingAccount: Dispatch<SetStateAction<AccountResponse | null>>;
+  setDeletingAccount: Dispatch<SetStateAction<AccountResponse | null>>;
 }
 
 const iconMap = {
@@ -169,29 +236,79 @@ const iconMap = {
   savings: PiggyBank,
 };
 
-export function AccountCard({ account, currency, rate }: AccountCardProps) {
+export function AccountCard({
+  account,
+  currency,
+  rate,
+  user,
+  setEditingAccount,
+  setDeletingAccount,
+}: AccountCardProps) {
   const Icon = iconMap[account.type] || CreditCard;
 
   return (
-    <div className="p-6 bg-card rounded-xl border shadow-sm flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <div className="p-3 bg-primary/10 rounded-full text-primary">
-          <Icon className="h-10 w-10" />
+    <div className="flex flex-col w-full max-w-md space-y-1 p-4 md:p-6 bg-card rounded-xl border shadow-sm ">
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-primary/10 rounded-full text-primary">
+            <Icon className="size-6" />
+          </div>
+          <div className="flex flex-col">
+            <p className="text-lg font-medium">{account.name}</p>
+            <span className="text-sm text-muted-foreground ">
+              {account.showInReports ? "Included" : "Not included"} in balance
+            </span>
+          </div>
         </div>
-        <div>
-          <h3 className="font-medium">{account.name}</h3>
-          <p className="text-sm text-muted-foreground">{account.shortCode}</p>
-          <p className="flex space-x-1 text-sm text-muted-foreground">
-            <span className="capitalize">{account.type.toLowerCase()}</span>
-            <span>•</span>
-            <span>{account.currency.toUpperCase()}</span>
+        {user.role === "admin" && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <EllipsisVertical />
+                <span className="sr-only">More options</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuGroup>
+                <DropdownMenuItem onClick={() => setEditingAccount(account)}>
+                  <PencilIcon />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <ShareIcon />
+                  Share
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => setDeletingAccount(account)}
+                >
+                  <TrashIcon />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="text-sm px-1">{`${account.shortCode.toUpperCase()} • ${account.currency.toUpperCase()} • ${account.type.toUpperCase()}`}</span>
+        <div className="text-right mx-3">
+          <p
+            className={`font-medium text-lg ${
+              account.balance > 0 ? "text-emerald-600" : "text-destructive"
+            }`}
+          >
+            {convertAndFormat(
+              account.balance,
+              account.currency,
+              currency,
+              rate,
+            )}
           </p>
         </div>
-      </div>
-      <div className="text-right">
-        <p className="font-bold text-lg">
-          {convertAndFormat(account.balance, account.currency, currency, rate)}
-        </p>
       </div>
     </div>
   );
