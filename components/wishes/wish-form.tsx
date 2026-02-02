@@ -11,82 +11,61 @@ import {
 } from "@/components/ui/select";
 import {
   Field,
+  FieldContent,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
 import { Loader2 } from "lucide-react";
-import { ACCOUNT_CURRENCIES } from "@/lib/models/account";
+import { WishResponse, WishFormValues, wishSchema } from "@/lib/models/wish";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  BudgetExpenseFormValues,
-  BudgetExpenseInput,
-  budgetExpenseInputSchema,
-  budgetExpenseSchema,
-} from "@/lib/models/budget";
-import { CategoryResponse } from "@/lib/models/category";
-import { UserResponse } from "@/lib/models/user";
+import { ACCOUNT_CURRENCIES } from "@/lib/models/account";
+import { Switch } from "../ui/switch";
 
-interface BudgetFormProps {
-  categories: CategoryResponse[];
-  user: UserResponse;
-  onSubmit: (data: BudgetExpenseInput) => void;
+interface WishFormProps {
+  wish?: WishResponse | null;
+  onSubmit: (data: WishFormValues) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
 
-export function BudgetForm({
-  categories,
-  user,
+export function WishForm({
+  wish,
   onSubmit,
   onCancel,
   isLoading = false,
-}: BudgetFormProps) {
-  const form = useForm<BudgetExpenseInput>({
-    resolver: zodResolver(budgetExpenseInputSchema),
+}: WishFormProps) {
+  const form = useForm<WishFormValues>({
+    resolver: zodResolver(wishSchema),
     defaultValues: {
-      category: "",
-      amount: 0,
-      currency: user.currency || "usd",
-      description: "",
+      amount: wish?.amount || 0,
+      currency: wish?.currency || "usd",
+      description: wish?.description || "",
+      fulfilled: wish?.fulfilled || false,
     },
   });
 
   return (
-    <form
-      id="form-budget-expense"
-      onSubmit={form.handleSubmit((data) => onSubmit(data))}
-    >
+    <form id="form-wish" onSubmit={form.handleSubmit((data) => onSubmit(data))}>
       <FieldGroup>
         <Controller
-          name="category"
+          name="description"
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="form-budget-expense-category">
-                Category
+              <FieldLabel htmlFor="form-wish-description">
+                Description
               </FieldLabel>
-              <Select
-                name={field.name}
-                value={field.value}
-                onValueChange={field.onChange}
-              >
-                <SelectTrigger
-                  id="form-budget-expense-category"
-                  aria-invalid={fieldState.invalid}
-                  className="min-w-30"
-                >
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent position="item-aligned">
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.uid}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input
+                {...field}
+                id="form-wish-description"
+                aria-invalid={fieldState.invalid}
+                placeholder="Wish Description"
+                autoComplete="off"
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />
@@ -96,17 +75,14 @@ export function BudgetForm({
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="form-budget-expense-amount">
-                  Amount
-                </FieldLabel>
+                <FieldLabel htmlFor="form-wish-amount">Amount</FieldLabel>
+
                 <Input
                   {...field}
-                  id="form-budget-expense-amount"
+                  id="form-wish-amount"
                   aria-invalid={fieldState.invalid}
-                  autoComplete="off"
                   placeholder="0.00"
                 />
-
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}
@@ -118,16 +94,14 @@ export function BudgetForm({
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="form-budget-expense-currency">
-                  Currency
-                </FieldLabel>
+                <FieldLabel htmlFor="form-wish-currency">Currency</FieldLabel>
                 <Select
                   name={field.name}
                   value={field.value}
                   onValueChange={field.onChange}
                 >
                   <SelectTrigger
-                    id="form-budget-expense-currency"
+                    id="form-wish-currency"
                     aria-invalid={fieldState.invalid}
                     className="min-w-30"
                   >
@@ -146,21 +120,26 @@ export function BudgetForm({
           />
         </div>
         <Controller
-          name="description"
+          name="fulfilled"
           control={form.control}
           render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="form-budget-expense-description">
-                Description
-              </FieldLabel>
-              <Input
-                {...field}
-                id="form-budget-expense-description"
+            <Field orientation="horizontal" data-invalid={fieldState.invalid}>
+              <FieldContent>
+                <FieldLabel htmlFor="form-account-fulfilled">
+                  Fulfilled
+                </FieldLabel>
+                <FieldDescription>Turn on if fulfilled</FieldDescription>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </FieldContent>
+              <Switch
+                id="form-account-fulfilled"
+                name={field.name}
+                checked={field.value}
+                onCheckedChange={field.onChange}
                 aria-invalid={fieldState.invalid}
-                placeholder="Rent"
-                autoComplete="off"
               />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />
@@ -173,9 +152,9 @@ export function BudgetForm({
           >
             Cancel
           </Button>
-          <Button type="submit" form="form-budget-expense" disabled={isLoading}>
+          <Button type="submit" form="form-wish" disabled={isLoading}>
             {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-            Create
+            {wish ? "Update" : "Create"}
           </Button>
         </div>
       </FieldGroup>

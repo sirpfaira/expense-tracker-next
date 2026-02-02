@@ -1,3 +1,5 @@
+"use client";
+
 import { CategoryResponse } from "@/lib/models/category";
 import { RateResponse } from "@/lib/models/summary";
 import { UserResponse } from "@/lib/models/user";
@@ -48,11 +50,17 @@ import {
 import {
   BudgetExpense,
   BudgetExpenseFormValues,
+  BudgetExpenseInput,
   BudgetResponse,
 } from "@/lib/models/budget";
 import { TransactionResponse } from "@/lib/models/transaction";
 import { BudgetForm } from "./budget-form";
-import { formatCategory } from "@/lib/utils";
+import {
+  convertAmount,
+  convertAndFormat,
+  formatCategory,
+  formatCurrency,
+} from "@/lib/utils";
 
 interface BudgetDetailsProps {
   budget: BudgetResponse | undefined;
@@ -74,26 +82,33 @@ const BudgetDetails = ({
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const addBudgetExpense = useAddBudgetExpense();
   const deleteBudgetExpense = useDeleteBudgetExpense();
-  const [editingBudgetExpense, setEditingBudgetExpense] =
-    useState<BudgetExpenseFormValues | null>(null);
   const [deletingBudgetExpense, setDeletingBudgetExpense] =
     useState<BudgetExpenseFormValues | null>(null);
 
   const totalBudget =
-    budget?.expenses?.reduce((sum, b) => sum + b.amount, 0) || 0;
+    budget?.expenses?.reduce(
+      (sum, b) =>
+        sum + convertAmount(b.amount, b.currency, user.currency, rate),
+      0,
+    ) || 0;
   const totalSpent =
     transactions
       .filter((t) => t.type === "expense")
-      .reduce((sum, b) => sum + b.amount, 0) || 0;
-  const overBudgetCount =
-    totalSpent > totalBudget ? totalSpent - totalBudget : 0;
+      .reduce(
+        (sum, b) =>
+          sum + convertAmount(b.amount, b.currency, user.currency, rate),
+        0,
+      ) || 0;
+  const overBudget = totalSpent > totalBudget ? totalSpent - totalBudget : 0;
 
-  const handleAddExpenseBudget = async (data: BudgetExpenseFormValues) => {
+  const handleAddExpenseBudget = async (data: BudgetExpenseInput) => {
     try {
-      await addBudgetExpense.mutateAsync(data);
+      await addBudgetExpense.mutateAsync({
+        ...data,
+        period: currentDate.toISOString().split("T")[0],
+      });
       toast.success("Budget expense saved successfully");
       setIsCreateDialogOpen(false);
-      setEditingBudgetExpense(null);
     } catch (error) {
       toast.error(
         error instanceof Error
@@ -124,11 +139,18 @@ const BudgetDetails = ({
     const expensesTotal =
       transactions
         .filter((t) => t.category === expense.category)
-        .reduce((sum, b) => sum + b.amount, 0) || 0;
-    const percentage: number = (expensesTotal / expense.amount) * 100;
+        .reduce(
+          (sum, b) =>
+            sum + convertAmount(b.amount, b.currency, user.currency, rate),
+          0,
+        ) || 0;
+    const percentage: number =
+      (expensesTotal /
+        convertAmount(expense.amount, expense.currency, user.currency, rate)) *
+      100;
     if (percentage >= 100) {
       return {
-        amount: expensesTotal,
+        actual: expensesTotal,
         percentage: percentage,
         color: "text-red-600",
         bgColor: "bg-red-500",
@@ -138,7 +160,7 @@ const BudgetDetails = ({
     }
     if (percentage >= 80) {
       return {
-        amount: expensesTotal,
+        actual: expensesTotal,
         percentage: percentage,
         color: "text-amber-600",
         bgColor: "bg-amber-500",
@@ -147,7 +169,7 @@ const BudgetDetails = ({
       };
     }
     return {
-      amount: expensesTotal,
+      actual: expensesTotal,
       percentage: percentage,
       color: "text-green-600",
       bgColor: "bg-green-500",
@@ -176,7 +198,7 @@ const BudgetDetails = ({
           )}
         </div>
       ) : (
-        <div className="flex flex-col space-y-6">
+        <div className="flex flex-col space-y-6 mb-6">
           <div className="grid gap-4 sm:grid-cols-3">
             <Card>
               <CardHeader className="pb-2">
@@ -185,15 +207,12 @@ const BudgetDetails = ({
                   Total Budget
                 </CardDescription>
                 <CardTitle className="text-2xl">
-                  $
-                  {totalBudget.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                  })}
+                  {formatCurrency(totalBudget, user.currency)}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-xs text-muted-foreground">
-                  Across {budget?.expenses.length || 0} active budgets
+                  Across {budget?.expenses.length || 0} active expenses
                 </p>
               </CardContent>
             </Card>
@@ -204,16 +223,13 @@ const BudgetDetails = ({
                   Total Spent
                 </CardDescription>
                 <CardTitle className="text-2xl">
-                  $
-                  {totalSpent.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                  })}
+                  {formatCurrency(totalSpent, user.currency)}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-xs text-muted-foreground">
                   {totalBudget > 0
-                    ? ((totalSpent / totalBudget) * 100).toFixed(1)
+                    ? ((totalSpent / totalBudget) * 100).toFixed(0)
                     : 0}
                   % of total budget
                 </p>
@@ -226,16 +242,16 @@ const BudgetDetails = ({
                   Over Budget
                 </CardDescription>
                 <CardTitle
-                  className={`text-2xl ${overBudgetCount > 0 ? "text-red-600" : "text-green-600"}`}
+                  className={`text-2xl ${overBudget > 0 ? "text-destructive" : "text-green-600"}`}
                 >
-                  {overBudgetCount}
+                  {formatCurrency(overBudget, user.currency)}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-xs text-muted-foreground">
-                  {overBudgetCount === 0
-                    ? "All budgets on track"
-                    : `${overBudgetCount} budget(s) exceeded`}
+                  {overBudget === 0
+                    ? "On track"
+                    : `${formatCurrency(overBudget, user.currency)} over spent`}
                 </p>
               </CardContent>
             </Card>
@@ -272,6 +288,12 @@ const BudgetDetails = ({
                     currency: expense.currency,
                     description: expense.description,
                   };
+                  const convertedExpenseAmount = convertAmount(
+                    expense.amount,
+                    expense.currency,
+                    user.currency,
+                    rate,
+                  );
 
                   return (
                     <div
@@ -310,13 +332,13 @@ const BudgetDetails = ({
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">
-                            ${status.amount} spent
+                            {formatCurrency(status.actual, user.currency)} spent
                           </span>
                           <span className="font-medium">
-                            $
-                            {expense.amount.toLocaleString("en-US", {
-                              minimumFractionDigits: 2,
-                            })}
+                            {formatCurrency(
+                              convertedExpenseAmount,
+                              user.currency,
+                            )}
                           </span>
                         </div>
                         <Progress
@@ -326,7 +348,13 @@ const BudgetDetails = ({
                         <div className="flex justify-between text-xs text-muted-foreground">
                           <span>{status.percentage.toFixed(1)}% used</span>
                           <span>
-                            ${expense.amount - status.amount} remaining
+                            {formatCurrency(
+                              convertedExpenseAmount - status.actual > 0
+                                ? convertedExpenseAmount - status.actual
+                                : 0,
+                              user.currency,
+                            )}{" "}
+                            remaining
                           </span>
                         </div>
                       </div>
@@ -344,11 +372,10 @@ const BudgetDetails = ({
           <DialogHeader>
             <DialogTitle>Create Budget</DialogTitle>
             <DialogDescription>
-              Set a spending limit for a specific period
+              Set a spending limit for a specific month
             </DialogDescription>
           </DialogHeader>
           <BudgetForm
-            budgetExpense={editingBudgetExpense}
             categories={categories}
             user={user}
             onSubmit={handleAddExpenseBudget}

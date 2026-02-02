@@ -289,7 +289,7 @@ function ReportsView({ transactions, user, rate }: ReportsViewProps) {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Total Expenses</CardDescription>
-            <CardTitle className="text-2xl text-red-600">
+            <CardTitle className="text-2xl text-destructive">
               {convertAndFormat(
                 summaryStats.expenses,
                 user.currency,
@@ -300,7 +300,7 @@ function ReportsView({ transactions, user, rate }: ReportsViewProps) {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <TrendingDown className="size-3 text-red-600" />
+              <TrendingDown className="size-3 text-destructive" />
               <span>
                 {
                   filteredTransactions.filter((t) => t.type === "expense")
@@ -313,9 +313,9 @@ function ReportsView({ transactions, user, rate }: ReportsViewProps) {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Available Balance</CardDescription>
+            <CardDescription>Net Cashflow</CardDescription>
             <CardTitle
-              className={`text-2xl ${summaryStats.balance >= 0 ? "text-green-600" : "text-red-600"}`}
+              className={`text-2xl ${summaryStats.balance >= 0 ? "text-green-600" : "text-destructive"}`}
             >
               {convertAndFormat(
                 summaryStats.balance,
@@ -330,7 +330,7 @@ function ReportsView({ transactions, user, rate }: ReportsViewProps) {
               {summaryStats.balance >= 0 ? (
                 <TrendingUp className="size-3 text-green-600" />
               ) : (
-                <TrendingDown className="size-3 text-red-600" />
+                <TrendingDown className="size-3 text-destructive" />
               )}
               {summaryStats.balance >= 0 ? "Positive" : "Negative"} cash flow
             </div>

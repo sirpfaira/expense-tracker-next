@@ -92,11 +92,11 @@ async function fetchCurrentRates(): Promise<Rate | null> {
       {
         base: "USD",
         target: "ZAR",
-        date: today,
       },
       {
         $set: {
           value: zarRate,
+          date: today,
         },
       },
       {

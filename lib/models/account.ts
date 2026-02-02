@@ -13,7 +13,7 @@ export const accountSchema = z.object({
     ),
   type: z.enum(["bank", "cash", "savings"]),
   currency: z.enum(["zar", "usd"]),
-  balance: z.coerce.number().min(0, "Balance must be a positive number"),
+  balance: z.coerce.number(),
   showInReports: z.boolean(),
   // showInReports: z.boolean().refine((val) => val === true, {
   //   message: "Turn on for account to be included in reports",

@@ -3,6 +3,7 @@ import { getDatabase } from "@/lib/mongodb";
 import { requireAuth } from "@/lib/auth";
 import {
   Budget,
+  BudgetExpense,
   budgetExpenseSchema,
   sanitizeBudget,
 } from "@/lib/models/budget";
@@ -43,51 +44,25 @@ export async function POST(request: Request) {
       period: data.period,
     });
     if (existingBudget) {
-      const existingExpense = existingBudget.expenses.find(
-        (expense) => expense.category === data.category,
+      let otherExpenses = existingBudget.expenses.filter(
+        (expense) => expense.category !== data.category,
       );
-      if (existingExpense) {
-        await db.collection<Budget>("budgets").findOneAndUpdate(
-          {
-            _id: existingBudget._id,
-            "expenses._id": existingExpense._id,
+
+      const newExpenses = [data, ...otherExpenses];
+
+      await db.collection<Budget>("budgets").findOneAndUpdate(
+        { _id: existingBudget._id },
+        {
+          $set: {
+            expenses: newExpenses,
           },
-          {
-            $set: {
-              "expenses.$.amount": data.amount,
-              "expenses.$.currency": data.currency,
-              "expenses.$.description": data.description,
-            },
-          },
-          { returnDocument: "after" },
-        );
-        return NextResponse.json(
-          { budget: sanitizeBudget(existingBudget) },
-          { status: 201 },
-        );
-      } else {
-        await db.collection<Budget>("budgets").findOneAndUpdate(
-          { _id: existingBudget._id },
-          {
-            $set: {
-              expenses: [
-                ...existingBudget.expenses,
-                {
-                  category: data.category,
-                  amount: data.amount,
-                  currency: data.currency,
-                  description: data.description,
-                },
-              ],
-            },
-          },
-          { returnDocument: "after" },
-        );
-        return NextResponse.json(
-          { budget: sanitizeBudget(existingBudget) },
-          { status: 201 },
-        );
-      }
+        },
+        { returnDocument: "after" },
+      );
+      return NextResponse.json(
+        { budget: sanitizeBudget(existingBudget) },
+        { status: 201 },
+      );
     } else {
       const budget: Budget = {
         period: data.period,

@@ -36,6 +36,8 @@ import {
   CreditCard,
   Tags,
   Landmark,
+  ShoppingCart,
+  NotebookText,
 } from "lucide-react";
 
 const mainNavItems = [
@@ -48,6 +50,16 @@ const mainNavItems = [
     title: "Transactions",
     url: "/transactions",
     icon: Receipt,
+  },
+  {
+    title: "Budgets",
+    url: "/budgets",
+    icon: NotebookText,
+  },
+  {
+    title: "Wishlist",
+    url: "/wishlist",
+    icon: ShoppingCart,
   },
   {
     title: "Reports",
@@ -67,11 +79,7 @@ const managementNavItems = [
     url: "/categories",
     icon: Tags,
   },
-  {
-    title: "Budgets",
-    url: "/budgets",
-    icon: CreditCard,
-  },
+
   {
     title: "Settings",
     url: "/settings",

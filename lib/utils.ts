@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const formatCurrency = (amount: number, currency: AccountCurrency) => {
+export const formatCurrency = (amount: number, currency: AccountCurrency) => {
   if (currency === "zar") {
     return new Intl.NumberFormat("en-ZA", {
       style: "currency",

@@ -12,10 +12,12 @@ export default function HomePage() {
             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary">
               <Wallet className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="font-semibold text-foreground">Expense Tracker</span>
+            <span className="font-semibold text-foreground">
+              Expense Tracker
+            </span>
           </div>
           <nav className="flex items-center gap-4">
-            <Link href="/login">
+            <Link href="/login" className="hidden md:block">
               <Button variant="ghost">Sign in</Button>
             </Link>
             <Link href="/register">
@@ -80,7 +82,9 @@ export default function HomePage() {
             <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mb-4">
               <Shield className="w-6 h-6 text-foreground" />
             </div>
-            <h3 className="font-semibold text-foreground mb-2">Secure & Private</h3>
+            <h3 className="font-semibold text-foreground mb-2">
+              Secure & Private
+            </h3>
             <p className="text-sm text-muted-foreground">
               Your financial data is encrypted and protected with
               industry-standard security.

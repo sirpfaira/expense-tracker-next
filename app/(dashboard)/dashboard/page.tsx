@@ -32,19 +32,24 @@ import { UserResponse } from "@/lib/models/user";
 import { RateResponse } from "@/lib/models/summary";
 import { useAccounts } from "@/hooks/use-accounts";
 import { AccountResponse } from "@/lib/models/account";
+import BudgetCard from "@/components/dashboard/budget-card";
+import { useBudgets } from "@/hooks/use-budgets";
+import { BudgetResponse } from "@/lib/models/budget";
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { data: transactions } = useTransactions();
   const { data: accounts } = useAccounts();
+  const { data: budgets } = useBudgets();
   const { data: rate } = useRates();
 
   return (
     <>
-      {user && transactions && accounts && rate ? (
+      {user && transactions && accounts && budgets && rate ? (
         <DashboardView
           transactions={transactions}
           accounts={accounts}
+          budgets={budgets}
           user={user}
           rate={rate}
         />
@@ -58,6 +63,7 @@ export default function DashboardPage() {
 type DashboardViewProps = {
   transactions: TransactionResponse[];
   accounts: AccountResponse[];
+  budgets: BudgetResponse[];
   user: UserResponse;
   rate: RateResponse;
 };
@@ -65,12 +71,21 @@ type DashboardViewProps = {
 function DashboardView({
   transactions,
   accounts,
+  budgets,
   user,
   rate,
 }: DashboardViewProps) {
   const totalIncome =
     transactions
-      ?.filter((t) => t.type === "income")
+      ?.filter((t) => {
+        const trxDate = new Date(t.date);
+        const currentDate = new Date();
+        return (
+          trxDate.getMonth() === currentDate.getMonth() &&
+          trxDate.getFullYear() === currentDate.getFullYear() &&
+          t.type === "income"
+        );
+      })
       .reduce(
         (sum, t) =>
           sum + convertAmount(t.amount, t.currency, user.currency, rate),
@@ -79,14 +94,20 @@ function DashboardView({
 
   const totalExpenses =
     transactions
-      ?.filter((t) => t.type === "expense")
+      ?.filter((t) => {
+        const trxDate = new Date(t.date);
+        const currentDate = new Date();
+        return (
+          trxDate.getMonth() === currentDate.getMonth() &&
+          trxDate.getFullYear() === currentDate.getFullYear() &&
+          t.type === "expense"
+        );
+      })
       .reduce(
         (sum, t) =>
           sum + convertAmount(t.amount, t.currency, user.currency, rate),
         0,
       ) || 0;
-
-  // const balance = totalIncome - totalExpenses;
   const balance =
     accounts
       ?.filter((acc) => acc.showInReports)
@@ -166,74 +187,12 @@ function DashboardView({
         </div>
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <div>
-              <CardTitle>Budget</CardTitle>
-              <CardDescription>
-                Stay on track with your spending goals
-              </CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent className="grid gap-3">
-            <div className="p-4 bg-card rounded-xl border shadow-sm space-y-3">
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-green-500/10 rounded-full text-green-500">
-                    <ArrowUp className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Income</p>
-                    <p className="text-xs text-muted-foreground">This month</p>
-                  </div>
-                </div>
-                <span className="font-medium">
-                  {convertAndFormat(2000, user.currency, user.currency, rate)}
-                </span>
-              </div>
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Received</span>
-                  <span>{80}%</span>
-                </div>
-                <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-green-500"
-                    style={{ width: `${80}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="p-4 bg-card rounded-xl border shadow-sm space-y-3">
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-red-500/10 rounded-full text-red-500">
-                    <ArrowDown className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Expenses</p>
-                    <p className="text-xs text-muted-foreground">This month</p>
-                  </div>
-                </div>
-                <span className="font-medium">
-                  {convertAndFormat(1400, user.currency, user.currency, rate)}
-                </span>
-              </div>
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Utilized</span>
-                  <span>{60}%</span>
-                </div>
-                <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-red-400"
-                    style={{ width: `${60}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <BudgetCard
+          budgets={budgets}
+          transactions={transactions}
+          user={user}
+          rate={rate}
+        />
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>

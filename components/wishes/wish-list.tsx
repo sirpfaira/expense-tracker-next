@@ -25,9 +25,9 @@ import {
   TrashIcon,
 } from "lucide-react";
 import { ArrowDownCircle, CreditCard, Banknote, PiggyBank } from "lucide-react";
-import { AccountForm } from "./account-form";
-import { AccountResponse, AccountFormValues } from "@/lib/models/account";
-import { useUpdateAccount, useDeleteAccount } from "@/hooks/use-accounts";
+import { WishForm } from "./wish-form";
+import { WishResponse, WishFormValues } from "@/lib/models/wish";
+import { useUpdateWish, useDeleteWish } from "@/hooks/use-wishes";
 import { toast } from "sonner";
 import { convertAndFormat } from "@/lib/utils";
 import { RateResponse } from "@/lib/models/summary";
@@ -42,62 +42,59 @@ import {
 import { Button } from "@/components/ui/button";
 import { UserResponse } from "@/lib/models/user";
 
-interface AccountsListProps {
-  accounts: AccountResponse[];
+interface WishesListProps {
+  wishes: WishResponse[];
   rate: RateResponse | undefined;
   user: UserResponse;
 }
 
-export function AccountsList({ accounts, rate, user }: AccountsListProps) {
-  const [editingAccount, setEditingAccount] = useState<AccountResponse | null>(
-    null,
-  );
-  const [deletingAccount, setDeletingAccount] =
-    useState<AccountResponse | null>(null);
+export function WishList({ wishes, rate, user }: WishesListProps) {
+  const [editingWish, setEditingWish] = useState<WishResponse | null>(null);
+  const [deletingWish, setDeletingWish] = useState<WishResponse | null>(null);
 
-  const updateMutation = useUpdateAccount();
-  const deleteMutation = useDeleteAccount();
+  const updateMutation = useUpdateWish();
+  const deleteMutation = useDeleteWish();
 
-  const handleUpdate = async (data: AccountFormValues) => {
-    if (!editingAccount) return;
+  const handleUpdate = async (data: WishFormValues) => {
+    if (!editingWish) return;
 
     try {
       await updateMutation.mutateAsync({
-        id: editingAccount.id,
+        id: editingWish.id,
         ...data,
       });
-      toast.success("Account updated successfully");
-      setEditingAccount(null);
+      toast.success("Wish updated successfully");
+      setEditingWish(null);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to update account",
+        error instanceof Error ? error.message : "Failed to update wish",
       );
     }
   };
 
   const handleDelete = async () => {
-    if (!deletingAccount) return;
+    if (!deletingWish) return;
 
     try {
-      await deleteMutation.mutateAsync(deletingAccount.id);
-      toast.success("Account deleted successfully");
-      setDeletingAccount(null);
+      await deleteMutation.mutateAsync(deletingWish.id);
+      toast.success("Wish deleted successfully");
+      setDeletingWish(null);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to delete account",
+        error instanceof Error ? error.message : "Failed to delete wish",
       );
     }
   };
 
-  if (accounts.length === 0) {
+  if (wishes.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
           <ArrowDownCircle className="w-6 h-6 text-muted-foreground" />
         </div>
-        <p className="text-muted-foreground">No accounts yet</p>
+        <p className="text-muted-foreground">No wishes yet</p>
         <p className="text-sm text-muted-foreground">
-          Add your first account to get started
+          Add your first wish to get started
         </p>
       </div>
     );
@@ -106,38 +103,38 @@ export function AccountsList({ accounts, rate, user }: AccountsListProps) {
   return (
     <>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {accounts.map((account) => (
-          <AccountCard
-            key={account.name}
-            account={account}
+        {wishes.map((wish) => (
+          <WishCard
+            key={wish.id}
+            wish={wish}
             rate={rate}
             user={user}
-            setEditingAccount={setEditingAccount}
-            setDeletingAccount={setDeletingAccount}
+            setEditingWish={setEditingWish}
+            setDeletingWish={setDeletingWish}
           />
         ))}
-        {accounts.length === 0 && (
+        {wishes.length === 0 && (
           <div className="col-span-full text-center p-8 text-muted-foreground border border-dashed rounded-lg">
-            No accounts found. Create one to get started.
+            No wishes found. Create one to get started.
           </div>
         )}
       </div>
       {/* Edit Dialog */}
       <Dialog
-        open={!!editingAccount}
-        onOpenChange={(open) => !open && setEditingAccount(null)}
+        open={!!editingWish}
+        onOpenChange={(open) => !open && setEditingWish(null)}
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Account</DialogTitle>
+            <DialogTitle>Edit Wish</DialogTitle>
             <DialogDescription>
-              Update the account details below.
+              Update the wish details below.
             </DialogDescription>
           </DialogHeader>
-          <AccountForm
-            account={editingAccount}
+          <WishForm
+            wish={editingWish}
             onSubmit={handleUpdate}
-            onCancel={() => setEditingAccount(null)}
+            onCancel={() => setEditingWish(null)}
             isLoading={updateMutation.isPending}
           />
         </DialogContent>
@@ -145,15 +142,15 @@ export function AccountsList({ accounts, rate, user }: AccountsListProps) {
 
       {/* Delete Confirmation */}
       <AlertDialog
-        open={!!deletingAccount}
-        onOpenChange={(open) => !open && setDeletingAccount(null)}
+        open={!!deletingWish}
+        onOpenChange={(open) => !open && setDeletingWish(null)}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Account</AlertDialogTitle>
+            <AlertDialogTitle>Delete Wish</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this account? This action cannot
-              be undone.
+              Are you sure you want to delete this wish? This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -171,12 +168,12 @@ export function AccountsList({ accounts, rate, user }: AccountsListProps) {
   );
 }
 
-interface AccountCardProps {
-  account: AccountResponse;
+interface WishCardProps {
+  wish: WishResponse;
   rate: RateResponse | undefined;
   user: UserResponse;
-  setEditingAccount: Dispatch<SetStateAction<AccountResponse | null>>;
-  setDeletingAccount: Dispatch<SetStateAction<AccountResponse | null>>;
+  setEditingWish: Dispatch<SetStateAction<WishResponse | null>>;
+  setDeletingWish: Dispatch<SetStateAction<WishResponse | null>>;
 }
 
 const iconMap = {
@@ -185,27 +182,24 @@ const iconMap = {
   savings: PiggyBank,
 };
 
-export function AccountCard({
-  account,
+export function WishCard({
+  wish,
   rate,
   user,
-  setEditingAccount,
-  setDeletingAccount,
-}: AccountCardProps) {
-  const Icon = iconMap[account.type] || CreditCard;
+  setEditingWish,
+  setDeletingWish,
+}: WishCardProps) {
+  //   const Icon = iconMap[wish.type] || CreditCard;
 
   return (
     <div className="flex flex-col w-full max-w-md space-y-1 p-4 md:p-6 bg-card rounded-xl border shadow-sm ">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
-          <div className="p-3 bg-primary/10 rounded-full text-primary">
+          {/* <div className="p-3 bg-primary/10 rounded-full text-primary">
             <Icon className="size-6" />
-          </div>
+          </div> */}
           <div className="flex flex-col">
-            <p className="text-lg font-medium">{account.name}</p>
-            <span className="text-sm text-muted-foreground ">
-              {account.showInReports ? "Included" : "Not included"} in balance
-            </span>
+            <p className="text-lg font-medium">{wish.description}</p>
           </div>
         </div>
         {user.role === "admin" && (
@@ -218,7 +212,7 @@ export function AccountCard({
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuGroup>
-                <DropdownMenuItem onClick={() => setEditingAccount(account)}>
+                <DropdownMenuItem onClick={() => setEditingWish(wish)}>
                   <PencilIcon />
                   Edit
                 </DropdownMenuItem>
@@ -231,7 +225,7 @@ export function AccountCard({
               <DropdownMenuGroup>
                 <DropdownMenuItem
                   variant="destructive"
-                  onClick={() => setDeletingAccount(account)}
+                  onClick={() => setDeletingWish(wish)}
                 >
                   <TrashIcon />
                   Delete
@@ -242,19 +236,10 @@ export function AccountCard({
         )}
       </div>
       <div className="flex items-center justify-between">
-        <span className="text-sm px-1">{`${account.shortCode.toUpperCase()} • ${account.currency.toUpperCase()} • ${account.type.toUpperCase()}`}</span>
+        <span className="text-sm px-1">{`${wish.currency.toUpperCase()}`}</span>
         <div className="text-right mx-3">
-          <p
-            className={`font-medium text-lg ${
-              account.balance > 0 ? "text-emerald-600" : "text-destructive"
-            }`}
-          >
-            {convertAndFormat(
-              account.balance,
-              account.currency,
-              user.currency,
-              rate,
-            )}
+          <p className={`font-medium text-lg text-emerald-600`}>
+            {convertAndFormat(wish.amount, wish.currency, user.currency, rate)}
           </p>
         </div>
       </div>
