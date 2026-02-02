@@ -1,22 +1,13 @@
 "use client";
 
+import {
+  BudgetExpenseFormValues,
+  BudgetResponse,
+  DeleteBudgetInput,
+} from "@/lib/models/budget";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { BudgetWithSpending, BudgetPeriod } from "@/lib/models/budget";
 
-interface CreateBudgetInput {
-  name: string;
-  amount: number;
-  period: BudgetPeriod;
-  categoryId?: string | null;
-  startDate?: string;
-}
-
-interface UpdateBudgetInput extends CreateBudgetInput {
-  id: string;
-  isActive?: boolean;
-}
-
-async function fetchBudgets(): Promise<BudgetWithSpending[]> {
+async function fetchBudgets(): Promise<BudgetResponse[]> {
   const res = await fetch("/api/budgets");
   if (!res.ok) {
     const error = await res.json();
@@ -26,9 +17,9 @@ async function fetchBudgets(): Promise<BudgetWithSpending[]> {
   return data.budgets;
 }
 
-async function createBudget(
-  input: CreateBudgetInput,
-): Promise<BudgetWithSpending> {
+async function addBudgetExpense(
+  input: BudgetExpenseFormValues,
+): Promise<BudgetResponse> {
   const res = await fetch("/api/budgets", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -42,26 +33,12 @@ async function createBudget(
   return data.budget;
 }
 
-async function updateBudget(
-  input: UpdateBudgetInput,
-): Promise<BudgetWithSpending> {
+async function deleteBudgetExpense(input: DeleteBudgetInput): Promise<void> {
   const { id, ...rest } = input;
   const res = await fetch(`/api/budgets/${id}`, {
-    method: "PUT",
+    method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(rest),
-  });
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.error || "Failed to update budget");
-  }
-  const data = await res.json();
-  return data.budget;
-}
-
-async function deleteBudget(id: string): Promise<void> {
-  const res = await fetch(`/api/budgets/${id}`, {
-    method: "DELETE",
   });
   if (!res.ok) {
     const error = await res.json();
@@ -76,33 +53,22 @@ export function useBudgets() {
   });
 }
 
-export function useCreateBudget() {
+export function useAddBudgetExpense() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: createBudget,
+    mutationFn: addBudgetExpense,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["budgets"] });
     },
   });
 }
 
-export function useUpdateBudget() {
+export function useDeleteBudgetExpense() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: updateBudget,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["budgets"] });
-    },
-  });
-}
-
-export function useDeleteBudget() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: deleteBudget,
+    mutationFn: deleteBudgetExpense,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["budgets"] });
     },

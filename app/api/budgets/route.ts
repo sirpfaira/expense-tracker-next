@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { getDatabase } from "@/lib/mongodb";
 import { requireAuth } from "@/lib/auth";
-import { Budget, budgetSchema, sanitizeBudget } from "@/lib/models/budget";
+import {
+  Budget,
+  budgetExpenseSchema,
+  sanitizeBudget,
+} from "@/lib/models/budget";
 import z from "zod";
 
 export async function GET() {
   try {
-    const user = await requireAuth();
+    await requireAuth();
     const db = await getDatabase();
     const budgets = await db
       .collection<Budget>("budgets")
@@ -32,14 +36,76 @@ export async function POST(request: Request) {
   try {
     await requireAuth();
     const body = await request.json();
-    const data = budgetSchema.parse(body);
+    const data = budgetExpenseSchema.parse(body);
 
     const db = await getDatabase();
-    const result = await db.collection<Budget>("budgets").insertOne(data);
-    return NextResponse.json(
-      { budget: sanitizeBudget({ ...data, _id: result.insertedId }) },
-      { status: 201 },
-    );
+    const existingBudget = await db.collection<Budget>("budgets").findOne({
+      period: data.period,
+    });
+    if (existingBudget) {
+      const existingExpense = existingBudget.expenses.find(
+        (expense) => expense.category === data.category,
+      );
+      if (existingExpense) {
+        await db.collection<Budget>("budgets").findOneAndUpdate(
+          {
+            _id: existingBudget._id,
+            "expenses._id": existingExpense._id,
+          },
+          {
+            $set: {
+              "expenses.$.amount": data.amount,
+              "expenses.$.currency": data.currency,
+              "expenses.$.description": data.description,
+            },
+          },
+          { returnDocument: "after" },
+        );
+        return NextResponse.json(
+          { budget: sanitizeBudget(existingBudget) },
+          { status: 201 },
+        );
+      } else {
+        await db.collection<Budget>("budgets").findOneAndUpdate(
+          { _id: existingBudget._id },
+          {
+            $set: {
+              expenses: [
+                ...existingBudget.expenses,
+                {
+                  category: data.category,
+                  amount: data.amount,
+                  currency: data.currency,
+                  description: data.description,
+                },
+              ],
+            },
+          },
+          { returnDocument: "after" },
+        );
+        return NextResponse.json(
+          { budget: sanitizeBudget(existingBudget) },
+          { status: 201 },
+        );
+      }
+    } else {
+      const budget: Budget = {
+        period: data.period,
+        expenses: [
+          {
+            category: data.category,
+            amount: data.amount,
+            currency: data.currency,
+            description: data.description,
+          },
+        ],
+      };
+      const result = await db.collection<Budget>("budgets").insertOne(budget);
+      return NextResponse.json(
+        { budget: sanitizeBudget({ ...budget, _id: result.insertedId }) },
+        { status: 201 },
+      );
+    }
   } catch (error) {
     if (error instanceof z.ZodError) {
       return new NextResponse(JSON.stringify(error.issues), { status: 422 });
