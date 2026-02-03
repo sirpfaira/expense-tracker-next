@@ -33,7 +33,6 @@ import {
   Settings,
   LogOut,
   ChevronUp,
-  CreditCard,
   Tags,
   Landmark,
   ShoppingCart,

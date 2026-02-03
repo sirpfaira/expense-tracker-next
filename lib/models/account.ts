@@ -15,9 +15,6 @@ export const accountSchema = z.object({
   currency: z.enum(["zar", "usd"]),
   balance: z.coerce.number(),
   showInReports: z.boolean(),
-  // showInReports: z.boolean().refine((val) => val === true, {
-  //   message: "Turn on for account to be included in reports",
-  // }),
 });
 
 export type AccountFormValues = z.infer<typeof accountSchema>;

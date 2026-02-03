@@ -1,66 +1,20 @@
-import { useAuth } from "@/components/providers/auth-provider";
-import { useTransactions } from "@/hooks/use-transactions";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  formatCategory,
-  convertAndFormat,
-  formatDate,
-  convertAmount,
-  formatCurrency,
-} from "@/lib/utils";
-import LoadingIndicator from "@/components/layout/loading-indicator";
-import { useRates } from "@/hooks/use-rates";
+import { formatCategory, convertAmount, formatCurrency } from "@/lib/utils";
 import { TransactionResponse } from "@/lib/models/transaction";
 import { UserResponse } from "@/lib/models/user";
 import { RateResponse } from "@/lib/models/summary";
-import { useAccounts } from "@/hooks/use-accounts";
-import { AccountResponse } from "@/lib/models/account";
 import { BudgetExpense, BudgetResponse } from "@/lib/models/budget";
-import { CategoryResponse } from "@/lib/models/category";
-import { useState } from "react";
-import {
-  useAddBudgetExpense,
-  useDeleteBudgetExpense,
-} from "@/hooks/use-budgets";
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
-import {
-  CreditCard,
-  Plus,
-  Trash2,
-  Loader2,
-  AlertTriangle,
-  CheckCircle2,
-  TrendingUp,
-  Wallet,
-} from "lucide-react";
+import { AlertTriangle, CheckCircle2 } from "lucide-react";
 
 type BudgetCardProps = {
   budgets: BudgetResponse[];

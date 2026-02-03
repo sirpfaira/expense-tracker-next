@@ -112,7 +112,7 @@ export default function SettingsPage() {
         throw new Error(data.error || "Failed to update profile");
       }
 
-      await refetchUser();
+      refetchUser();
       toast.success("Profile updated successfully");
       setIsEditingProfile(false);
     } catch (error) {
@@ -208,17 +208,28 @@ export default function SettingsPage() {
   const handleExportData = async () => {
     try {
       // Fetch all user data
-      const [transactionsRes, categoriesRes, budgetsRes] = await Promise.all([
+      const [
+        accountsRes,
+        transactionsRes,
+        categoriesRes,
+        budgetsRes,
+        wishesRes,
+      ] = await Promise.all([
+        fetch("/api/accounts"),
         fetch("/api/transactions"),
-        fetch("/api/categories"),
         fetch("/api/budgets"),
+        fetch("/api/categories"),
+        fetch("/api/wishes"),
       ]);
 
-      const [transactions, categories, budgets] = await Promise.all([
-        transactionsRes.json(),
-        categoriesRes.json(),
-        budgetsRes.json(),
-      ]);
+      const [accounts, transactions, categories, budgets, wishes] =
+        await Promise.all([
+          accountsRes.json(),
+          transactionsRes.json(),
+          categoriesRes.json(),
+          budgetsRes.json(),
+          wishesRes.json(),
+        ]);
 
       const exportData = {
         exportDate: new Date().toISOString(),
@@ -228,6 +239,8 @@ export default function SettingsPage() {
         transactions: transactions.transactions || [],
         categories: categories.categories || [],
         budgets: budgets.budgets || [],
+        wishes: wishes.wishes || [],
+        accounts: accounts.accounts || [],
       };
 
       const blob = new Blob([JSON.stringify(exportData, null, 2)], {
@@ -263,7 +276,7 @@ export default function SettingsPage() {
         throw new Error(data.error || "Failed to update currency");
       }
 
-      await refetchUser();
+      refetchUser();
       toast.success("Currency updated successfully");
       setIsCurrencyDialogOpen(false);
       setIsUpdatingCurrency(false);
@@ -308,9 +321,7 @@ export default function SettingsPage() {
               </p>
             </div>
           </div>
-
           <Separator />
-
           {isEditingProfile ? (
             <div className="space-y-4">
               <div className="space-y-2">
@@ -362,7 +373,6 @@ export default function SettingsPage() {
           )}
         </CardContent>
       </Card>
-
       {/* Security Section */}
       <Card>
         <CardHeader>
@@ -466,7 +476,6 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
-
       {/* Data Section */}
       <Card>
         <CardHeader>

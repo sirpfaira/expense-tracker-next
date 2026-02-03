@@ -1,6 +1,6 @@
 "use client";
 
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,42 +18,58 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  EllipsisVertical,
-  PencilIcon,
-  ShareIcon,
-  TrashIcon,
-} from "lucide-react";
-import { ArrowDownCircle, CreditCard, Banknote, PiggyBank } from "lucide-react";
+import { Pencil, ShoppingCart, Trash2 } from "lucide-react";
+import { ArrowDownCircle } from "lucide-react";
 import { WishForm } from "./wish-form";
 import { WishResponse, WishFormValues } from "@/lib/models/wish";
 import { useUpdateWish, useDeleteWish } from "@/hooks/use-wishes";
 import { toast } from "sonner";
-import { convertAndFormat } from "@/lib/utils";
+import { convertAmount, convertAndFormat, formatDate } from "@/lib/utils";
 import { RateResponse } from "@/lib/models/summary";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { UserResponse } from "@/lib/models/user";
+import { Progress } from "@/components/ui/progress";
+import { AccountResponse } from "@/lib/models/account";
 
 interface WishesListProps {
   wishes: WishResponse[];
+  accounts: AccountResponse[];
   rate: RateResponse | undefined;
   user: UserResponse;
 }
 
-export function WishList({ wishes, rate, user }: WishesListProps) {
+type AllocatedWish = WishResponse & {
+  allocation: number;
+};
+
+export function WishList({ wishes, accounts, rate, user }: WishesListProps) {
   const [editingWish, setEditingWish] = useState<WishResponse | null>(null);
   const [deletingWish, setDeletingWish] = useState<WishResponse | null>(null);
-
   const updateMutation = useUpdateWish();
   const deleteMutation = useDeleteWish();
+
+  const allocatedWishes = useMemo(() => {
+    const totalSavings = accounts
+      .filter((t) => t.type === "savings")
+      .reduce(
+        (sum, b) =>
+          sum + convertAmount(b.balance, b.currency, user.currency, rate),
+        0,
+      );
+    let savings = totalSavings || 0;
+    return [...wishes]
+      .filter((t) => t.fulfilled === false)
+      .sort((a, b) => b.priority - a.priority)
+      .map((project) => {
+        const allocation = Math.min(project.amount, savings);
+        savings -= allocation;
+
+        return {
+          ...project,
+          allocation,
+        };
+      });
+  }, [wishes, accounts]);
 
   const handleUpdate = async (data: WishFormValues) => {
     if (!editingWish) return;
@@ -86,39 +102,39 @@ export function WishList({ wishes, rate, user }: WishesListProps) {
     }
   };
 
-  if (wishes.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
-          <ArrowDownCircle className="w-6 h-6 text-muted-foreground" />
-        </div>
-        <p className="text-muted-foreground">No wishes yet</p>
-        <p className="text-sm text-muted-foreground">
-          Add your first wish to get started
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {wishes.map((wish) => (
-          <WishCard
-            key={wish.id}
-            wish={wish}
-            rate={rate}
-            user={user}
-            setEditingWish={setEditingWish}
-            setDeletingWish={setDeletingWish}
-          />
-        ))}
-        {wishes.length === 0 && (
-          <div className="col-span-full text-center p-8 text-muted-foreground border border-dashed rounded-lg">
-            No wishes found. Create one to get started.
+    <div className="flex flex-col space-y-4">
+      {wishes.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
+            <ArrowDownCircle className="w-6 h-6 text-muted-foreground" />
           </div>
-        )}
-      </div>
+          <p className="text-muted-foreground">No wishes yet</p>
+          <p className="text-sm text-muted-foreground">
+            Add your first wish to get started
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {allocatedWishes
+            .sort((a, b) => b.priority - a.priority)
+            .map((wish) => (
+              <WishCard
+                key={wish.id}
+                wish={wish}
+                rate={rate}
+                user={user}
+                setEditingWish={setEditingWish}
+                setDeletingWish={setDeletingWish}
+              />
+            ))}
+          {wishes.length === 0 && (
+            <div className="col-span-full text-center p-8 text-muted-foreground border border-dashed rounded-lg">
+              No wishes found. Create one to get started.
+            </div>
+          )}
+        </div>
+      )}
       {/* Edit Dialog */}
       <Dialog
         open={!!editingWish}
@@ -139,7 +155,6 @@ export function WishList({ wishes, rate, user }: WishesListProps) {
           />
         </DialogContent>
       </Dialog>
-
       {/* Delete Confirmation */}
       <AlertDialog
         open={!!deletingWish}
@@ -164,23 +179,17 @@ export function WishList({ wishes, rate, user }: WishesListProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }
 
 interface WishCardProps {
-  wish: WishResponse;
+  wish: AllocatedWish;
   rate: RateResponse | undefined;
   user: UserResponse;
   setEditingWish: Dispatch<SetStateAction<WishResponse | null>>;
   setDeletingWish: Dispatch<SetStateAction<WishResponse | null>>;
 }
-
-const iconMap = {
-  bank: CreditCard,
-  cash: Banknote,
-  savings: PiggyBank,
-};
 
 export function WishCard({
   wish,
@@ -189,58 +198,66 @@ export function WishCard({
   setEditingWish,
   setDeletingWish,
 }: WishCardProps) {
-  //   const Icon = iconMap[wish.type] || CreditCard;
+  const progress = Math.min((wish.allocation / wish.amount) * 100, 100);
 
   return (
-    <div className="flex flex-col w-full max-w-md space-y-1 p-4 md:p-6 bg-card rounded-xl border shadow-sm ">
-      <div className="flex items-start justify-between">
+    <div className="p-6 bg-card rounded-xl border shadow-sm space-y-4">
+      <div className="flex justify-between items-start">
         <div className="flex items-center gap-4">
-          {/* <div className="p-3 bg-primary/10 rounded-full text-primary">
-            <Icon className="size-6" />
-          </div> */}
-          <div className="flex flex-col">
-            <p className="text-lg font-medium">{wish.description}</p>
+          <div className="p-3 bg-primary/10 rounded-full text-primary">
+            <ShoppingCart className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-lg">{wish.description}</h3>
+            <p className="text-sm text-muted-foreground">
+              Target: {formatDate(wish.date, "FULL")}
+            </p>
           </div>
         </div>
-        {user.role === "admin" && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <EllipsisVertical />
-                <span className="sr-only">More options</span>
+        <div className="flex items-center gap-2">
+          {user.role === "admin" && (
+            <div className="flex">
+              <Button
+                onClick={() => setEditingWish(wish)}
+                variant={"ghost"}
+                size={"icon"}
+                aria-label="Edit savings goal"
+              >
+                <Pencil className="h-4 w-4 text-muted-foreground" />
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuGroup>
-                <DropdownMenuItem onClick={() => setEditingWish(wish)}>
-                  <PencilIcon />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <ShareIcon />
-                  Share
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem
-                  variant="destructive"
-                  onClick={() => setDeletingWish(wish)}
-                >
-                  <TrashIcon />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+
+              <Button
+                onClick={() => setDeletingWish(wish)}
+                variant={"ghost"}
+                size={"icon"}
+                className="hover:bg-destructive/10 group"
+                aria-label="Delete savings goal"
+              >
+                <Trash2 className="h-4 w-4 text-muted-foreground group-hover:text-destructive" />
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
-      <div className="flex items-center justify-between">
-        <span className="text-sm px-1">{`${wish.currency.toUpperCase()}`}</span>
-        <div className="text-right mx-3">
-          <p className={`font-medium text-lg text-emerald-600`}>
+      <div className="space-y-2">
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Progress</span>
+          <span className="font-medium">{progress.toFixed(0)}%</span>
+        </div>
+        <Progress value={progress} className="h-2" />
+        <div className="flex justify-between text-sm font-medium">
+          <span>
+            {convertAndFormat(
+              wish.allocation,
+              wish.currency,
+              user.currency,
+              rate,
+            )}
+          </span>
+          <span className="text-muted-foreground">
+            of{" "}
             {convertAndFormat(wish.amount, wish.currency, user.currency, rate)}
-          </p>
+          </span>
         </div>
       </div>
     </div>

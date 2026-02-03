@@ -20,10 +20,8 @@ import { ACCOUNT_CURRENCIES } from "@/lib/models/account";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  BudgetExpenseFormValues,
   BudgetExpenseInput,
   budgetExpenseInputSchema,
-  budgetExpenseSchema,
 } from "@/lib/models/budget";
 import { CategoryResponse } from "@/lib/models/category";
 import { UserResponse } from "@/lib/models/user";

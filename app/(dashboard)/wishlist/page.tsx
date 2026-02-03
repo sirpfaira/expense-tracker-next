@@ -19,11 +19,13 @@ import { toast } from "sonner";
 import { useAuth } from "@/components/providers/auth-provider";
 import LoadingIndicator from "@/components/layout/loading-indicator";
 import { useRates } from "@/hooks/use-rates";
+import { useAccounts } from "@/hooks/use-accounts";
 
 export default function WishesPage() {
   const { user } = useAuth();
   const { data: wishes, isLoading: wishesLoading } = useWishes();
   const { data: rate } = useRates();
+  const { data: accounts } = useAccounts();
   const createMutation = useCreateWish();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
@@ -40,14 +42,14 @@ export default function WishesPage() {
   };
 
   return (
-    <>
-      {user && wishes ? (
+    <div>
+      {user && wishes && accounts ? (
         <div className="flex flex-col space-y-4 p-2 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Wishes</h1>
+              <h1 className="text-2xl font-bold text-foreground">Wish List</h1>
               <p className="text-muted-foreground text-sm">
-                View and manage all your wishes
+                View and manage all your wish list items
               </p>
             </div>
             {user.role === "admin" && (
@@ -83,8 +85,8 @@ export default function WishesPage() {
             </div>
           ) : (
             <WishList
-              wishes={wishes || []}
-              currency={user.currency}
+              wishes={wishes}
+              accounts={accounts}
               rate={rate}
               user={user}
             />
@@ -93,6 +95,6 @@ export default function WishesPage() {
       ) : (
         <LoadingIndicator />
       )}
-    </>
+    </div>
   );
 }

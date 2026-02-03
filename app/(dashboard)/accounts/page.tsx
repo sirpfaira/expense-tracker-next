@@ -82,7 +82,7 @@ export default function AccountsPage() {
               <Loader2 className="size-8 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <AccountsList accounts={accounts || []} rate={rate} user={user} />
+            <AccountsList accounts={accounts} rate={rate} user={user} />
           )}
         </div>
       ) : (

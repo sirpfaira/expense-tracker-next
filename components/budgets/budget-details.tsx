@@ -55,12 +55,7 @@ import {
 } from "@/lib/models/budget";
 import { TransactionResponse } from "@/lib/models/transaction";
 import { BudgetForm } from "./budget-form";
-import {
-  convertAmount,
-  convertAndFormat,
-  formatCategory,
-  formatCurrency,
-} from "@/lib/utils";
+import { convertAmount, formatCategory, formatCurrency } from "@/lib/utils";
 
 interface BudgetDetailsProps {
   budget: BudgetResponse | undefined;

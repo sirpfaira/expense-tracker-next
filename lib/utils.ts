@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { AccountCurrency, AccountType } from "./models/account";
+import { AccountCurrency } from "./models/account";
 import { RateResponse } from "./models/summary";
 
 export function cn(...inputs: ClassValue[]) {
@@ -52,15 +52,19 @@ export const convertAndFormat = (
 
 export const formatDate = (
   dateString: string,
-  option: "FULL" | "SHORT" = "FULL",
+  option: "FULL" | "MEDIUM" | "SHORT" = "FULL",
 ) => {
   const date = new Date(dateString);
   const options: Intl.DateTimeFormatOptions = {
     month: "2-digit", // "numeric" | "2-digit" | "long" | "short" | "narrow"
     day: "2-digit", // "numeric" | "2-digit"
   };
+
+  if (option === "MEDIUM") {
+    options.year = "2-digit";
+  }
   if (option === "FULL") {
-    options.year = "2-digit"; // "numeric" | "2-digit"
+    options.year = "numeric"; // "numeric" | "2-digit"
     // options.weekday = "short"; // "long" | "short" | "narrow"
     // options.hour = "numeric"; // "numeric" | "2-digit"
     // options.minute = "numeric"; // "numeric" | "2-digit"

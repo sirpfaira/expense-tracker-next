@@ -16,26 +16,11 @@ export async function PUT(request: Request) {
     }
 
     const db = await getDatabase();
-
-    // Check if email is already taken by another user except the current user
-    // const existingUser = await db.collection<User>("users").findOne({
-    //   email: email.toLowerCase(),
-    //   _id: { $ne: new ObjectId(user.id) },
-    // });
-
-    // if (existingUser) {
-    //   return NextResponse.json(
-    //     { error: "Email is already in use" },
-    //     { status: 400 },
-    //   );
-    // }
-
     const result = await db.collection<User>("users").findOneAndUpdate(
       { _id: new ObjectId(user.id) },
       {
         $set: {
           name: name.trim(),
-          // email: email.toLowerCase().trim(),
         },
       },
       { returnDocument: "after" },
@@ -97,7 +82,6 @@ export async function DELETE(request: Request) {
       db
         .collection("transactions")
         .deleteMany({ userId: new ObjectId(user.id) }),
-      // db.collection("budgets").deleteMany({ userId: new ObjectId(user.id) }),
       db.collection<User>("users").deleteOne({ _id: new ObjectId(user.id) }),
     ]);
 

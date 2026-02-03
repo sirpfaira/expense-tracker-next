@@ -237,7 +237,7 @@ function DashboardView({
                       className={`font-medium ${
                         transaction.type === "income"
                           ? "text-emerald-600"
-                          : "text-red-500"
+                          : "text-destructive"
                       }`}
                     >
                       {transaction.type === "income" ? "+" : "-"}
@@ -268,7 +268,7 @@ function DashboardView({
               asChild
             >
               <Link href="/transactions">
-                <ArrowDownCircle className="size-6 mr-3 text-red-500" />
+                <ArrowDownCircle className="size-6 mr-3 text-destructive" />
                 <div className="text-left">
                   <p className="font-medium">Add Expense</p>
                   <p className="text-xs text-muted-foreground">

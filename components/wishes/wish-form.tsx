@@ -22,7 +22,7 @@ import { WishResponse, WishFormValues, wishSchema } from "@/lib/models/wish";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ACCOUNT_CURRENCIES } from "@/lib/models/account";
-import { Switch } from "../ui/switch";
+import { Switch } from "@/components/ui/switch";
 
 interface WishFormProps {
   wish?: WishResponse | null;
@@ -43,6 +43,8 @@ export function WishForm({
       amount: wish?.amount || 0,
       currency: wish?.currency || "usd",
       description: wish?.description || "",
+      priority: wish?.priority || 0,
+      date: wish?.date ? new Date(wish.date) : new Date(),
       fulfilled: wish?.fulfilled || false,
     },
   });
@@ -120,29 +122,72 @@ export function WishForm({
           />
         </div>
         <Controller
-          name="fulfilled"
+          name="date"
           control={form.control}
           render={({ field, fieldState }) => (
-            <Field orientation="horizontal" data-invalid={fieldState.invalid}>
-              <FieldContent>
-                <FieldLabel htmlFor="form-account-fulfilled">
-                  Fulfilled
-                </FieldLabel>
-                <FieldDescription>Turn on if fulfilled</FieldDescription>
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </FieldContent>
-              <Switch
-                id="form-account-fulfilled"
-                name={field.name}
-                checked={field.value}
-                onCheckedChange={field.onChange}
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="form-wish-date">Target Date</FieldLabel>
+              <Input
+                {...field}
+                id="form-wish-date"
+                type="date"
                 aria-invalid={fieldState.invalid}
+                value={
+                  field.value instanceof Date
+                    ? field.value.toISOString().split("T")[0]
+                    : field.value
+                }
+                onChange={(e) => field.onChange(new Date(e.target.value))}
               />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />
+        <div className="grid grid-cols-2 gap-4">
+          <Controller
+            name="priority"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="form-wish-priority">Priority</FieldLabel>
+
+                <Input
+                  {...field}
+                  id="form-wish-priority"
+                  aria-invalid={fieldState.invalid}
+                  placeholder="0.00"
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+          <Controller
+            name="fulfilled"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field orientation="horizontal" data-invalid={fieldState.invalid}>
+                <FieldContent>
+                  <FieldLabel htmlFor="form-account-fulfilled">
+                    Fulfilled
+                  </FieldLabel>
+                  <FieldDescription>Turn on if fulfilled</FieldDescription>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </FieldContent>
+                <Switch
+                  id="form-account-fulfilled"
+                  name={field.name}
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  aria-invalid={fieldState.invalid}
+                />
+              </Field>
+            )}
+          />
+        </div>
         <div className="flex justify-end space-x-3">
           <Button
             type="button"

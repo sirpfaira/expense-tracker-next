@@ -273,7 +273,6 @@ export default function CategoriesPage() {
           </Button>
         )}
       </div>
-
       {user && categories ? (
         <Tabs defaultValue="expense">
           <TabsList className="grid w-full max-w-md grid-cols-2">
@@ -284,7 +283,6 @@ export default function CategoriesPage() {
               Income ({incomeCategories.length})
             </TabsTrigger>
           </TabsList>
-
           <TabsContent value="expense" className="mt-6">
             <Card>
               <CardHeader>
@@ -317,7 +315,6 @@ export default function CategoriesPage() {
               </CardContent>
             </Card>
           </TabsContent>
-
           <TabsContent value="income" className="mt-6">
             <Card>
               <CardHeader>
@@ -354,7 +351,6 @@ export default function CategoriesPage() {
       ) : (
         <LoadingIndicator />
       )}
-
       {/* Create Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
@@ -373,7 +369,6 @@ export default function CategoriesPage() {
           />
         </DialogContent>
       </Dialog>
-
       {/* Edit Dialog */}
       <Dialog
         open={!!editingCategory}
@@ -393,7 +388,6 @@ export default function CategoriesPage() {
           />
         </DialogContent>
       </Dialog>
-
       {/* Delete Confirmation */}
       <AlertDialog
         open={!!deletingCategory}
@@ -427,7 +421,6 @@ export default function CategoriesPage() {
 }
 
 type CategoryFormProps = {
-  // onSubmit: (data: CategoryFormValues) => Promise<void>;
   formData: CategoryFormData;
   setFormData: React.Dispatch<React.SetStateAction<CategoryFormData>>;
   onSubmit: () => void;

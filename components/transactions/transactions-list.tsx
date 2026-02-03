@@ -60,9 +60,9 @@ import { RateResponse } from "@/lib/models/summary";
 
 interface TransactionsListProps {
   transactions: TransactionResponse[];
-  categories: CategoryResponse[] | undefined;
-  accounts: AccountResponse[] | undefined;
-  rate: RateResponse | undefined;
+  categories: CategoryResponse[];
+  accounts: AccountResponse[];
+  rate: RateResponse;
   user: UserResponse;
 }
 

@@ -28,6 +28,8 @@ const pageNames: Record<string, string> = {
   "/categories": "Categories",
   "/budgets": "Budgets",
   "/settings": "Settings",
+  "/wishlist": "Wishlist",
+  "/accounts": "Accounts",
 };
 
 export default function DashboardLayout({

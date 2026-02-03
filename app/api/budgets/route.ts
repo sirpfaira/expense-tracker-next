@@ -3,7 +3,6 @@ import { getDatabase } from "@/lib/mongodb";
 import { requireAuth } from "@/lib/auth";
 import {
   Budget,
-  BudgetExpense,
   budgetExpenseSchema,
   sanitizeBudget,
 } from "@/lib/models/budget";

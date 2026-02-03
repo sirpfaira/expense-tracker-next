@@ -86,9 +86,9 @@ export default function TransactionsPage() {
           </DialogContent>
         </Dialog>
       </div>
-      {user && transactions ? (
+      {user && transactions && categories && accounts && rate ? (
         <TransactionsFilter
-          transactions={transactions || []}
+          transactions={transactions}
           categories={categories}
           accounts={accounts}
           rate={rate}
@@ -103,9 +103,9 @@ export default function TransactionsPage() {
 
 interface TransactionsFilterProps {
   transactions: TransactionResponse[];
-  categories: CategoryResponse[] | undefined;
-  accounts: AccountResponse[] | undefined;
-  rate: RateResponse | undefined;
+  categories: CategoryResponse[];
+  accounts: AccountResponse[];
+  rate: RateResponse;
   user: UserResponse;
 }
 function TransactionsFilter({
@@ -147,6 +147,7 @@ function TransactionsFilter({
     month: "long",
     year: "numeric",
   });
+
   return (
     <div className="flex flex-col space-y-3">
       <div className="flex items-center justify-between text-muted-foreground md:pl-2">
@@ -162,7 +163,7 @@ function TransactionsFilter({
         </div>
       </div>
       <TransactionsList
-        transactions={filteredTransactions || []}
+        transactions={filteredTransactions}
         categories={categories}
         accounts={accounts}
         rate={rate}

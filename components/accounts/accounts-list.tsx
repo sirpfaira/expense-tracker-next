@@ -217,17 +217,10 @@ export function AccountCard({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuGroup>
-                <DropdownMenuItem onClick={() => setEditingAccount(account)}>
-                  <PencilIcon />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <ShareIcon />
-                  Share
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setEditingAccount(account)}>
+                <PencilIcon />
+                Edit
+              </DropdownMenuItem>
               <DropdownMenuGroup>
                 <DropdownMenuItem
                   variant="destructive"

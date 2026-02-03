@@ -83,10 +83,8 @@ async function fetchCurrentRates(): Promise<Rate | null> {
     }
 
     const today = new Date();
-    // today.setHours(0, 0, 0, 0);
 
     const db = await getDatabase();
-
     // Upsert USD -> ZAR
     const result = await db.collection<Rate>("rates").updateOne(
       {

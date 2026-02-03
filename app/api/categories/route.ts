@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDatabase } from "@/lib/mongodb";
-import { getCurrentUser, requireAuth } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 import {
   Category,
   sanitizeCategory,
