@@ -55,7 +55,7 @@ export async function GET() {
   }
 }
 
-async function fetchCurrentRates(): Promise<Rate | null> {
+export async function fetchCurrentRates(): Promise<Rate | null> {
   const apiKey = process.env.EXCHANGE_RATE_API_KEY;
   if (!apiKey) {
     console.warn(

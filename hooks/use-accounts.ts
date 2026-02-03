@@ -1,7 +1,12 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { AccountResponse, AccountFormValues } from "@/lib/models/account";
+import {
+  AccountResponse,
+  AccountFormValues,
+  AccountTransferValues,
+  TransferInput,
+} from "@/lib/models/account";
 
 interface UpdateAccountInput extends AccountFormValues {
   id: string;
@@ -60,6 +65,20 @@ async function deleteAccount(id: string): Promise<void> {
   }
 }
 
+async function transferAccount(data: TransferInput): Promise<string> {
+  const res = await fetch(`/api/accounts`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || "Failed to update account!");
+  }
+  const payload = await res.json();
+  return payload.message;
+}
+
 export function useAccounts() {
   return useQuery({
     queryKey: ["accounts"],
@@ -94,6 +113,17 @@ export function useDeleteAccount() {
 
   return useMutation({
     mutationFn: deleteAccount,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["accounts"] });
+    },
+  });
+}
+
+export function useTransferAccount() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: transferAccount,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
     },

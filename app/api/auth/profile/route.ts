@@ -79,9 +79,7 @@ export async function DELETE(request: Request) {
 
     // Delete all user data
     await Promise.all([
-      db
-        .collection("transactions")
-        .deleteMany({ userId: new ObjectId(user.id) }),
+      db.collection("transactions").deleteMany({ username: user.username }),
       db.collection<User>("users").deleteOne({ _id: new ObjectId(user.id) }),
     ]);
 

@@ -16,8 +16,23 @@ export const accountSchema = z.object({
   balance: z.coerce.number(),
   showInReports: z.boolean(),
 });
-
 export type AccountFormValues = z.infer<typeof accountSchema>;
+
+export const transferSchema = z.object({
+  from: z.string().min(1, "From is required"),
+  to: z.string().min(1, "To is required"),
+  amount: z.coerce.number(),
+  currency: z.enum(["zar", "usd"]),
+  date: z.coerce.date(),
+});
+export type AccountTransferValues = z.infer<typeof transferSchema>;
+export type TransferInput = {
+  date: string;
+  currency: "zar" | "usd";
+  from: string;
+  to: string;
+  amount: number;
+};
 
 export type AccountType = "bank" | "cash" | "savings";
 export type AccountCurrency = "zar" | "usd";

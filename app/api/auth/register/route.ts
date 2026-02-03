@@ -25,7 +25,9 @@ export async function POST(request: NextRequest) {
     }
 
     const db = await getDatabase();
+    const username = email.split("@")[0];
     const usersCollection = db.collection<User>("users");
+    const existingUsername = await usersCollection.findOne({ username });
 
     // Hash password
     const hashedPassword = await hashPassword(password);
@@ -38,6 +40,7 @@ export async function POST(request: NextRequest) {
     if (isEmpty) {
       result = await usersCollection.insertOne({
         name,
+        username,
         email: email.toLowerCase().trim(),
         password: hashedPassword,
         role: "admin",
@@ -55,6 +58,7 @@ export async function POST(request: NextRequest) {
 
       result = await usersCollection.insertOne({
         name,
+        username: existingUsername ? `${username}${count + 1}` : username,
         email: email.toLowerCase().trim(),
         password: hashedPassword,
         role: "user",
@@ -65,6 +69,7 @@ export async function POST(request: NextRequest) {
     const user: User = {
       _id: result.insertedId,
       name,
+      username: existingUsername ? `${username}${count + 1}` : username,
       email: email.toLowerCase().trim(),
       password: hashedPassword,
       role: isEmpty ? "admin" : "user",

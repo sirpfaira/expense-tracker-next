@@ -10,7 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ArrowDownCircle, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { TransactionForm } from "@/components/transactions/transaction-form";
 import { TransactionsList } from "@/components/transactions/transactions-list";
 import {
@@ -31,6 +31,7 @@ import { AccountResponse } from "@/lib/models/account";
 import { UserResponse } from "@/lib/models/user";
 import { useRates } from "@/hooks/use-rates";
 import { RateResponse } from "@/lib/models/summary";
+import Link from "next/link";
 
 export default function TransactionsPage() {
   const { user } = useAuth();
@@ -137,7 +138,8 @@ function TransactionsFilter({
       const txDate = new Date(tx.date);
       return (
         txDate.getMonth() === currentDate.getMonth() &&
-        txDate.getFullYear() === currentDate.getFullYear()
+        txDate.getFullYear() === currentDate.getFullYear() &&
+        tx.type !== "transfer"
       );
     });
   }, [transactions, currentDate]);
@@ -149,26 +151,43 @@ function TransactionsFilter({
   });
 
   return (
-    <div className="flex flex-col space-y-3">
-      <div className="flex items-center justify-between text-muted-foreground md:pl-2">
-        <p className="font-medium text-lg">Month</p>
-        <div className="flex space-x-2 justify-between items-center">
-          <Button variant={"ghost"} size={"icon"} onClick={handlePrevMonth}>
-            <ChevronLeft className="size-6" />
-          </Button>
-          <h2 className="font-medium">{monthLabel}</h2>
-          <Button variant={"ghost"} size={"icon"} onClick={handleNextMonth}>
-            <ChevronRight className="size-6" />
+    <>
+      {accounts.length > 0 ? (
+        <div className="flex flex-col space-y-3">
+          <div className="flex items-center justify-between text-muted-foreground md:pl-2">
+            <p className="font-medium text-lg">Month</p>
+            <div className="flex space-x-2 justify-between items-center">
+              <Button variant={"ghost"} size={"icon"} onClick={handlePrevMonth}>
+                <ChevronLeft className="size-6" />
+              </Button>
+              <h2 className="font-medium">{monthLabel}</h2>
+              <Button variant={"ghost"} size={"icon"} onClick={handleNextMonth}>
+                <ChevronRight className="size-6" />
+              </Button>
+            </div>
+          </div>
+          <TransactionsList
+            transactions={filteredTransactions}
+            categories={categories}
+            accounts={accounts}
+            rate={rate}
+            user={user}
+          />
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
+            <ArrowDownCircle className="w-6 h-6 text-muted-foreground" />
+          </div>
+          <p className="text-muted-foreground">No accounts yet</p>
+          <p className="text-sm text-muted-foreground">
+            Add your first account to get started
+          </p>
+          <Button className="mt-4" asChild>
+            <Link href="/accounts">Add Account</Link>
           </Button>
         </div>
-      </div>
-      <TransactionsList
-        transactions={filteredTransactions}
-        categories={categories}
-        accounts={accounts}
-        rate={rate}
-        user={user}
-      />
-    </div>
+      )}
+    </>
   );
 }

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { AccountCurrency } from "./account";
 
 export const transactionSchema = z.object({
-  type: z.enum(["income", "expense"]),
+  type: z.enum(["income", "expense", "transfer"]),
   category: z.string().min(1, "Category is required"),
   account: z.string().min(1, "Account is required"),
   amount: z.coerce.number().positive("Amount must be a positive number"),
@@ -12,7 +12,7 @@ export const transactionSchema = z.object({
 });
 
 export const dbTransactionSchema = z.object({
-  type: z.enum(["income", "expense"]),
+  type: z.enum(["income", "expense", "transfer"]),
   category: z.string().min(1, "Category is required"),
   account: z.string().min(1, "Account is required"),
   currency: z.enum(["usd", "zar"]),
@@ -23,7 +23,7 @@ export const dbTransactionSchema = z.object({
 
 export type TransactionFormValues = z.infer<typeof transactionSchema>;
 
-export type TransactionType = "income" | "expense";
+export type TransactionType = "income" | "expense" | "transfer";
 
 export interface TransactionInput {
   type: TransactionType;
@@ -37,7 +37,7 @@ export interface TransactionInput {
 
 export interface Transaction {
   _id?: ObjectId;
-  userId: ObjectId;
+  username: string;
   type: TransactionType;
   category: string;
   account: string;
@@ -49,7 +49,7 @@ export interface Transaction {
 
 export interface TransactionResponse {
   id: string;
-  userId: string;
+  username: string;
   type: TransactionType;
   category: string;
   account: string;
@@ -64,7 +64,7 @@ export function sanitizeTransaction(
 ): TransactionResponse {
   return {
     id: transaction._id!.toString(),
-    userId: transaction.userId.toString(),
+    username: transaction.username,
     type: transaction.type,
     category: transaction.category,
     account: transaction.account,

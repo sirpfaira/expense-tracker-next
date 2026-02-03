@@ -167,14 +167,14 @@ function DashboardView({
         </div>
         <div className="px-6 py-4 bg-card rounded-xl border shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-red-500/10 rounded-full text-red-500">
+            <div className="p-3 bg-red-500/10 rounded-full text-destructive">
               <ArrowDown className="h-6 w-6" />
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">
                 This Month Expenses
               </p>
-              <h3 className="text-2xl font-bold text-red-500">
+              <h3 className="text-2xl font-bold text-destructive">
                 {convertAndFormat(
                   totalExpenses,
                   user.currency,

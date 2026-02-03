@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
 import { getDatabase } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/auth";
 import {
@@ -49,7 +48,7 @@ export async function POST(request: NextRequest) {
     const db = await getDatabase();
 
     const transaction: Transaction = {
-      userId: new ObjectId(user.id),
+      username: user.username,
       type: data.type,
       account: data.account,
       currency: data.currency as AccountCurrency,

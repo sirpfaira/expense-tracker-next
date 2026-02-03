@@ -211,7 +211,7 @@ export function TransactionsList({
                     {transaction.type === "income" ? (
                       <ArrowUpCircle className="w-4 h-4 text-emerald-600" />
                     ) : (
-                      <ArrowDownCircle className="w-4 h-4 text-red-500" />
+                      <ArrowDownCircle className="w-4 h-4 text-destructive" />
                     )}
                     <span className="capitalize">{transaction.type}</span>
                   </div>
@@ -238,7 +238,7 @@ export function TransactionsList({
                     rate,
                   )}
                 </TableCell>
-                {user.id === transaction.userId && (
+                {user.username === transaction.username && (
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
