@@ -6,7 +6,7 @@ export const transactionSchema = z.object({
   type: z.enum(["income", "expense", "transfer"]),
   category: z.string().min(1, "Category is required"),
   account: z.string().min(1, "Account is required"),
-  amount: z.coerce.number().positive("Amount must be a positive number"),
+  amount: z.coerce.number().min(0.01, "Amount must be greater than 0"),
   description: z.string().min(1, "Description is required").max(36),
   date: z.coerce.date(),
 });
@@ -16,7 +16,7 @@ export const dbTransactionSchema = z.object({
   category: z.string().min(1, "Category is required"),
   account: z.string().min(1, "Account is required"),
   currency: z.enum(["usd", "zar"]),
-  amount: z.coerce.number().positive("Amount must be a positive number"),
+  amount: z.coerce.number().min(0.01, "Amount must be greater than 0"),
   description: z.string().min(1, "Description is required").max(36),
   date: z.coerce.date(),
 });

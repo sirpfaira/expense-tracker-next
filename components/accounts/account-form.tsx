@@ -49,6 +49,7 @@ export function AccountForm({
       type: account?.type || "cash",
       currency: account?.currency || "usd",
       balance: account?.balance || 0,
+      date: new Date(),
       showInReports: account?.showInReports || true,
     },
   });
@@ -124,6 +125,9 @@ export function AccountForm({
                     ))}
                   </SelectContent>
                 </Select>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
               </Field>
             )}
           />
@@ -139,6 +143,7 @@ export function AccountForm({
                   name={field.name}
                   value={field.value}
                   onValueChange={field.onChange}
+                  disabled={account ? true : false}
                 >
                   <SelectTrigger
                     id="form-account-currency"
@@ -169,6 +174,7 @@ export function AccountForm({
                   id="form-account-balance"
                   aria-invalid={fieldState.invalid}
                   placeholder="Balance"
+                  autoComplete="off"
                 />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
@@ -177,6 +183,28 @@ export function AccountForm({
             )}
           />
         </div>
+        <Controller
+          name="date"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="form-transaction-date">Date</FieldLabel>
+              <Input
+                {...field}
+                id="form-transaction-date"
+                type="date"
+                aria-invalid={fieldState.invalid}
+                value={
+                  field.value instanceof Date
+                    ? field.value.toISOString().split("T")[0]
+                    : field.value
+                }
+                onChange={(e) => field.onChange(new Date(e.target.value))}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
         <Controller
           name="showInReports"
           control={form.control}

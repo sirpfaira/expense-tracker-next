@@ -85,6 +85,7 @@ export function BudgetForm({
                   ))}
                 </SelectContent>
               </Select>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />

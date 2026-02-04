@@ -14,17 +14,24 @@ export const accountSchema = z.object({
   type: z.enum(["bank", "cash", "savings"]),
   currency: z.enum(["zar", "usd"]),
   balance: z.coerce.number(),
+  date: z.coerce.date(),
   showInReports: z.boolean(),
 });
 export type AccountFormValues = z.infer<typeof accountSchema>;
 
-export const transferSchema = z.object({
-  from: z.string().min(1, "From is required"),
-  to: z.string().min(1, "To is required"),
-  amount: z.coerce.number(),
-  currency: z.enum(["zar", "usd"]),
-  date: z.coerce.date(),
-});
+export const transferSchema = z
+  .object({
+    from: z.string().min(1, "From is required"),
+    to: z.string().min(1, "To is required"),
+    amount: z.coerce.number().min(0.01, "Amount must be greater than 0"),
+    currency: z.enum(["zar", "usd"]),
+    date: z.coerce.date(),
+  })
+  .refine((values) => values.from !== values.to, {
+    message: "From and To cannot be the same",
+    path: ["to"],
+  });
+
 export type AccountTransferValues = z.infer<typeof transferSchema>;
 export type TransferInput = {
   date: string;

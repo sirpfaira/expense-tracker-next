@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 import z from "zod";
 
 export const wishSchema = z.object({
-  amount: z.coerce.number().positive("Amount must be a positive number"),
+  amount: z.coerce.number().min(0.01, "Amount must be greater than 0"),
   currency: z.enum(["zar", "usd"]),
   description: z.string().min(1, "Description is required").max(36),
   priority: z.coerce.number().min(1).max(1000),

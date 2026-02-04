@@ -41,10 +41,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { UserResponse } from "@/lib/models/user";
+import Link from "next/link";
 
 interface AccountsListProps {
   accounts: AccountResponse[];
-  rate: RateResponse | undefined;
+  rate: RateResponse;
   user: UserResponse;
 }
 
@@ -173,7 +174,7 @@ export function AccountsList({ accounts, rate, user }: AccountsListProps) {
 
 interface AccountCardProps {
   account: AccountResponse;
-  rate: RateResponse | undefined;
+  rate: RateResponse;
   user: UserResponse;
   setEditingAccount: Dispatch<SetStateAction<AccountResponse | null>>;
   setDeletingAccount: Dispatch<SetStateAction<AccountResponse | null>>;
@@ -202,7 +203,9 @@ export function AccountCard({
             <Icon className="size-6" />
           </div>
           <div className="flex flex-col">
-            <p className="text-lg font-medium">{account.name}</p>
+            <Link href={`/accounts/${account.id}`}>
+              <p className="text-lg font-medium">{account.name}</p>
+            </Link>
             <span className="text-sm text-muted-foreground ">
               {account.showInReports ? "Included" : "Not included"} in balance
             </span>

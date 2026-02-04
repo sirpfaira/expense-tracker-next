@@ -46,6 +46,11 @@ const mainNavItems = [
     icon: LayoutDashboard,
   },
   {
+    title: "Accounts",
+    url: "/accounts",
+    icon: Landmark,
+  },
+  {
     title: "Transactions",
     url: "/transactions",
     icon: Receipt,
@@ -68,11 +73,6 @@ const mainNavItems = [
 ];
 
 const managementNavItems = [
-  {
-    title: "Accounts",
-    url: "/accounts",
-    icon: Landmark,
-  },
   {
     title: "Categories",
     url: "/categories",

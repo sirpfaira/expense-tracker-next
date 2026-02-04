@@ -3,7 +3,7 @@ import z from "zod";
 
 export const budgetExpenseInputSchema = z.object({
   category: z.string().min(1, "Category is required"),
-  amount: z.coerce.number().positive("Amount must be a positive number"),
+  amount: z.coerce.number().min(0.01, "Amount must be greater than 0"),
   currency: z.enum(["zar", "usd"]),
   description: z.string().min(1, "Description is required").max(36),
 });

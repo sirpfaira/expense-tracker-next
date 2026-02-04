@@ -2,8 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getDatabase } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/auth";
-import { Account, accountSchema, sanitizeAccount } from "@/lib/models/account";
+import {
+  Account,
+  AccountCurrency,
+  accountSchema,
+  sanitizeAccount,
+} from "@/lib/models/account";
 import z from "zod";
+import {
+  sanitizeTransaction,
+  Transaction,
+  TransactionType,
+} from "@/lib/models/transaction";
 
 export async function GET(
   request: NextRequest,
@@ -25,18 +35,27 @@ export async function GET(
     }
 
     const db = await getDatabase();
-    const account = await db.collection<Account>("accounts").findOne({
+    const dbAccount = await db.collection<Account>("accounts").findOne({
       _id: new ObjectId(id),
     });
 
-    if (!account) {
+    if (!dbAccount) {
       return NextResponse.json(
         { error: "Account not found!" },
         { status: 404 },
       );
     }
 
-    return NextResponse.json({ account: sanitizeAccount(account) });
+    const dbTransactions = await db
+      .collection<Transaction>("transactions")
+      .find({ account: dbAccount.shortCode })
+      .sort({ date: -1 })
+      .toArray();
+
+    const transactions = dbTransactions.map(sanitizeTransaction);
+    const account = sanitizeAccount(dbAccount);
+
+    return NextResponse.json({ account, transactions });
   } catch (error) {
     console.error("Get account error:", error);
     return NextResponse.json(
@@ -69,19 +88,59 @@ export async function PUT(
     const data = accountSchema.parse(body);
 
     const db = await getDatabase();
+    const account = await db.collection<Account>("accounts").findOne({
+      _id: new ObjectId(id),
+    });
+
+    if (!account) {
+      return NextResponse.json({ error: "Account not found" }, { status: 404 });
+    }
+
+    const { date, ...rest } = data;
 
     const result = await db.collection<Account>("accounts").findOneAndUpdate(
       {
         _id: new ObjectId(id),
       },
       {
-        $set: data,
+        $set: rest,
       },
       { returnDocument: "after" },
     );
 
     if (!result) {
       return NextResponse.json({ error: "Account not found" }, { status: 404 });
+    }
+
+    if (data.balance !== account.balance) {
+      const difference = data.balance - account.balance;
+      if (difference > 0) {
+        const transaction = {
+          username: user.username,
+          type: "transfer" as TransactionType,
+          account: data.shortCode,
+          currency: data.currency as AccountCurrency,
+          category: "trf-transfer-in",
+          amount: difference,
+          description: "Balance adjustment",
+          date: new Date(data.date),
+        };
+
+        await db.collection<Transaction>("transactions").insertOne(transaction);
+      } else {
+        const transaction = {
+          username: user.username,
+          type: "transfer" as TransactionType,
+          account: data.shortCode,
+          currency: data.currency as AccountCurrency,
+          category: "trf-transfer-out",
+          amount: difference * -1,
+          description: "Balance adjustment",
+          date: new Date(data.date),
+        };
+
+        await db.collection<Transaction>("transactions").insertOne(transaction);
+      }
     }
 
     return NextResponse.json({ account: sanitizeAccount(result) });

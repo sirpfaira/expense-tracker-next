@@ -2,22 +2,6 @@
 
 import { useState } from "react";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -34,13 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  MoreHorizontal,
-  Pencil,
-  Trash2,
-  ArrowUpCircle,
-  ArrowDownCircle,
-} from "lucide-react";
+import { ArrowDownCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TransactionForm } from "./transaction-form";
 import {
@@ -52,11 +30,12 @@ import {
   useDeleteTransaction,
 } from "@/hooks/use-transactions";
 import { toast } from "sonner";
-import { formatCategory, convertAndFormat, formatDate } from "@/lib/utils";
 import { CategoryResponse } from "@/lib/models/category";
 import { AccountResponse } from "@/lib/models/account";
 import { UserResponse } from "@/lib/models/user";
 import { RateResponse } from "@/lib/models/summary";
+import TransactionsMobileView from "./transactions-mobile-view";
+import TransactionsDesktopView from "./transactions-desktop-view";
 
 interface TransactionsListProps {
   transactions: TransactionResponse[];
@@ -132,143 +111,21 @@ export function TransactionsList({
   return (
     <div className="flex flex-col">
       {isMobile ? (
-        <div className="flex flex-col divide-y divide-muted border-y border-muted pr-3 md:pr-0">
-          {transactions.map((transaction) => (
-            <DropdownMenu key={transaction.id}>
-              <DropdownMenuTrigger asChild>
-                <div
-                  key={transaction.id}
-                  className="flex items-center justify-between py-2"
-                >
-                  <div className="flex items-center gap-3 max-w-[70%]">
-                    <div className="w-full">
-                      <p className="text-sm font-medium">
-                        {formatCategory(transaction.category)}
-                      </p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        <span> {formatDate(transaction.date, "SHORT")}</span>
-                        <span> - </span>
-                        <span className="capitalize">
-                          {transaction.description}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-                  <span
-                    className={`font-medium text-sm ${
-                      transaction.type === "income"
-                        ? "text-emerald-600"
-                        : "text-destructive"
-                    }`}
-                  >
-                    {convertAndFormat(
-                      transaction.amount,
-                      transaction.currency,
-                      user.currency,
-                      rate,
-                    )}
-                  </span>
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => setEditingTransaction(transaction)}
-                >
-                  <Pencil className="w-4 h-4" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  variant="destructive"
-                  onClick={() => setDeletingTransaction(transaction)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ))}
-        </div>
+        <TransactionsMobileView
+          transactions={transactions}
+          setEditingTransaction={setEditingTransaction}
+          setDeletingTransaction={setDeletingTransaction}
+          rate={rate}
+          user={user}
+        />
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Account</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
-              <TableHead className="w-12.5"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {transactions.map((transaction) => (
-              <TableRow key={transaction.id}>
-                <TableCell>{formatDate(transaction.date)}</TableCell>
-                <TableCell>{transaction.description}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1.5">
-                    {transaction.type === "income" ? (
-                      <ArrowUpCircle className="w-4 h-4 text-emerald-600" />
-                    ) : (
-                      <ArrowDownCircle className="w-4 h-4 text-destructive" />
-                    )}
-                    <span className="capitalize">{transaction.type}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="secondary">
-                    {formatCategory(transaction.category)}
-                  </Badge>
-                </TableCell>
-                <TableCell className="capitalize">
-                  {transaction.account.toLowerCase()}
-                </TableCell>
-                <TableCell
-                  className={`text-right font-medium ${
-                    transaction.type === "income"
-                      ? "text-emerald-600"
-                      : "text-red-500"
-                  }`}
-                >
-                  {convertAndFormat(
-                    transaction.amount,
-                    transaction.currency,
-                    user.currency,
-                    rate,
-                  )}
-                </TableCell>
-                {user.username === transaction.username && (
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Open menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => setEditingTransaction(transaction)}
-                        >
-                          <Pencil className="w-4 h-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          variant="destructive"
-                          onClick={() => setDeletingTransaction(transaction)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                )}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <TransactionsDesktopView
+          transactions={transactions}
+          setEditingTransaction={setEditingTransaction}
+          setDeletingTransaction={setDeletingTransaction}
+          rate={rate}
+          user={user}
+        />
       )}
 
       {/* Edit Dialog */}

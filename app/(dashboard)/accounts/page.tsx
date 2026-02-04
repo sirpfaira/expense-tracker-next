@@ -60,7 +60,7 @@ export default function AccountsPage() {
 
   return (
     <>
-      {user && accounts ? (
+      {user && accounts && rate ? (
         <div className="flex flex-col space-y-4 p-2 md:p-6">
           <div className="flex items-center justify-between">
             <div>

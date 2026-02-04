@@ -4,12 +4,17 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   AccountResponse,
   AccountFormValues,
-  AccountTransferValues,
   TransferInput,
 } from "@/lib/models/account";
+import { TransactionResponse } from "@/lib/models/transaction";
 
 interface UpdateAccountInput extends AccountFormValues {
   id: string;
+}
+
+interface AccountTransactionsResponse {
+  account: AccountResponse;
+  transactions: TransactionResponse[];
 }
 
 async function fetchAccounts(): Promise<AccountResponse[]> {
@@ -79,6 +84,18 @@ async function transferAccount(data: TransferInput): Promise<string> {
   return payload.message;
 }
 
+async function fetchAccountTransactions(
+  id: string,
+): Promise<AccountTransactionsResponse> {
+  const res = await fetch(`/api/accounts/${id}`);
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || "Failed to fetch account transactions!");
+  }
+  const data = await res.json();
+  return data;
+}
+
 export function useAccounts() {
   return useQuery({
     queryKey: ["accounts"],
@@ -127,5 +144,12 @@ export function useTransferAccount() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
     },
+  });
+}
+
+export function useAccountTransactions(id: string) {
+  return useQuery({
+    queryKey: ["accounts", id],
+    queryFn: () => fetchAccountTransactions(id),
   });
 }

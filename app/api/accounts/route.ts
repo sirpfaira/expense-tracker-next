@@ -9,8 +9,7 @@ import {
   transferSchema,
 } from "@/lib/models/account";
 import { z } from "zod";
-import { Transaction } from "@/lib/models/transaction";
-import { ObjectId } from "mongodb";
+import { Transaction, TransactionType } from "@/lib/models/transaction";
 import { Rate, RateResponse, sanitizeRate } from "@/lib/models/summary";
 import { fetchCurrentRates } from "../rates/route";
 import { convertAmount } from "@/lib/utils";
@@ -46,7 +45,23 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const data = accountSchema.parse(body);
     const db = await getDatabase();
-    const result = await db.collection<Account>("accounts").insertOne(data);
+    const { date, ...rest } = data;
+    const result = await db.collection<Account>("accounts").insertOne(rest);
+
+    if (data.balance > 0) {
+      const transaction = {
+        username: user.username,
+        type: "transfer" as TransactionType,
+        account: data.shortCode,
+        currency: data.currency as AccountCurrency,
+        category: "trf-transfer-in",
+        amount: data.balance,
+        description: "Initial balance",
+        date: new Date(data.date),
+      };
+
+      await db.collection<Transaction>("transactions").insertOne(transaction);
+    }
     return NextResponse.json(
       { account: sanitizeAccount({ ...data, _id: result.insertedId }) },
       { status: 201 },
@@ -121,20 +136,20 @@ export async function PATCH(request: NextRequest) {
     const transactions: Transaction[] = [
       {
         username: user.username,
-        type: "transfer",
+        type: "transfer" as TransactionType,
         account: data.to,
         currency: toCurrency.currency as AccountCurrency,
-        category: "transfer",
+        category: "trf-transfer-in",
         amount: Number(toAmount.toFixed(2)),
         description: "Inter account transfer",
         date: new Date(data.date),
       },
       {
         username: user.username,
-        type: "transfer",
+        type: "transfer" as TransactionType,
         account: data.from,
         currency: data.currency as AccountCurrency,
-        category: "transfer",
+        category: "trf-transfer-out",
         amount: data.amount,
         description: "Inter account transfer",
         date: new Date(data.date),
