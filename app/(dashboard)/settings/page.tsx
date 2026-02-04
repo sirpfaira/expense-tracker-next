@@ -54,6 +54,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import CurrencyForm from "@/components/settings/currency-form";
 import { CurrencyFormValues } from "@/lib/models/summary";
 import { Switch } from "@/components/ui/switch";
+import ThemeButton from "@/components/layout/theme-button";
 
 export default function SettingsPage() {
   const { user, logout, refetchUser } = useAuth();
@@ -472,7 +473,10 @@ export default function SettingsPage() {
                 </p>
               </div>
             </div>
-            <Badge variant="secondary">Coming Soon</Badge>
+            {/* <Badge variant="secondary">Coming Soon</Badge> */}
+            <div className="px-2.5">
+              <ThemeButton />
+            </div>
           </div>
         </CardContent>
       </Card>
