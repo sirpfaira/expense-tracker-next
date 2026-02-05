@@ -6,7 +6,6 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { useAccountTransactions } from "@/hooks/use-accounts";
 import LoadingIndicator from "@/components/layout/loading-indicator";
 import { TransactionsList } from "@/components/transactions/transactions-list";
-import { useCategories } from "@/hooks/use-categories";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -21,11 +20,10 @@ export default function AccountTransactionsDetails({
   const { user } = useAuth();
   const { data: rate } = useRates();
   const { data: payload } = useAccountTransactions(id);
-  const { data: categories } = useCategories();
 
   return (
     <div className="px-3 md:px-6 lg:px-8 py-2 md:py-6">
-      {rate && payload && categories && user ? (
+      {rate && payload && user ? (
         <div className="space-y-3 md:space-y-6">
           <div className="flex space-x-2 items-center">
             <ChevronLeft
@@ -55,8 +53,6 @@ export default function AccountTransactionsDetails({
 
             <TransactionsList
               transactions={payload.transactions}
-              categories={categories}
-              accounts={[payload.account]}
               rate={rate}
               user={user}
             />
