@@ -26,7 +26,6 @@ import { useAuth } from "@/components/providers/auth-provider";
 import LoadingIndicator from "@/components/layout/loading-indicator";
 import { useCategories } from "@/hooks/use-categories";
 import { useAccounts } from "@/hooks/use-accounts";
-import { CategoryResponse } from "@/lib/models/category";
 import { AccountResponse } from "@/lib/models/account";
 import { UserResponse } from "@/lib/models/user";
 import { useRates } from "@/hooks/use-rates";
@@ -90,7 +89,6 @@ export default function TransactionsPage() {
       {user && transactions && categories && accounts && rate ? (
         <TransactionsFilter
           transactions={transactions}
-          categories={categories}
           accounts={accounts}
           rate={rate}
           user={user}
@@ -104,14 +102,12 @@ export default function TransactionsPage() {
 
 interface TransactionsFilterProps {
   transactions: TransactionResponse[];
-  categories: CategoryResponse[];
   accounts: AccountResponse[];
   rate: RateResponse;
   user: UserResponse;
 }
 function TransactionsFilter({
   transactions,
-  categories,
   accounts,
   rate,
   user,
@@ -168,8 +164,6 @@ function TransactionsFilter({
           </div>
           <TransactionsList
             transactions={filteredTransactions}
-            categories={categories}
-            accounts={accounts}
             rate={rate}
             user={user}
           />
@@ -181,7 +175,7 @@ function TransactionsFilter({
           </div>
           <p className="text-muted-foreground">No accounts yet</p>
           <p className="text-sm text-muted-foreground">
-            Add your first account to get started
+            To add a transaction you should have an account first
           </p>
           <Button className="mt-4" asChild>
             <Link href="/accounts">Add Account</Link>

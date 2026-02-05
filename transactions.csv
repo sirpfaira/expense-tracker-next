@@ -1,0 +1,135 @@
+type,category,account,currency,amount,description,date,username
+transfer,trf-transfer-in,bidsim,zar,131.32,Balance b/d,2025-12-01,simplexpfaira
+transfer,trf-transfer-in,cashsim,zar,1806.45,Balance b/d,2025-12-01,simplexpfaira
+transfer,trf-transfer-in,paypsim,usd,105.84,Balance b/d,2025-12-01,simplexpfaira
+transfer,trf-transfer-out,payable,zar,25208,Balance b/d,2025-12-01,simplexpfaira
+expense,exp-utilities,cashsim,zar,400,Electricity,2025-12-01,simplexpfaira
+expense,exp-telecommunications,cashsim,zar,120,WiFi,2025-12-01,simplexpfaira
+expense,exp-utilities,cashsim,zar,200,Water,2025-12-01,simplexpfaira
+expense,exp-groceries,cashsim,zar,301.2,Baby Stuff,2025-12-01,simplexpfaira
+expense,exp-groceries,cashsim,zar,97,Meat,2025-12-01,simplexpfaira
+expense,exp-healthcare,cashsim,zar,361,Funeral Policy,2025-12-01,simplexpfaira
+expense,exp-groceries,cashsim,zar,90,Meat,2025-12-03,simplexpfaira
+transfer,trf-transfer-out,payable,zar,100,Betty,2025-12-05,simplexpfaira
+transfer,trf-transfer-in,cashsim,zar,100,Betty,2025-12-05,simplexpfaira
+expense,exp-groceries,cashsim,zar,129.05,Meat,2025-12-06,simplexpfaira
+expense,exp-furniture,cashsim,zar,120,Accessories,2025-12-06,simplexpfaira
+expense,exp-groceries,cashsim,zar,15,Vegetables,2025-12-06,simplexpfaira
+expense,exp-transportation,cashsim,zar,10,Taxi,2025-12-06,simplexpfaira
+expense,exp-family,cashsim,zar,378,T4T,2025-12-10,simplexpfaira
+expense,exp-groceries,cashsim,zar,19.9,Bread,2025-12-10,simplexpfaira
+transfer,trf-transfer-in,cashsim,zar,400,Inter Account Transfer,2025-12-10,simplexpfaira
+expense,exp-healthcare,cashsim,zar,50,Medication,2025-12-12,simplexpfaira
+expense,exp-furniture,bidsim,zar,75,Charger,2025-12-15,simplexpfaira
+expense,exp-telecommunications,bidsim,zar,10,Airtime,2025-12-17,simplexpfaira
+expense,exp-transaction-charges,bidsim,zar,2.5,EFT Charges,2025-12-17,simplexpfaira
+expense,exp-groceries,cashsim,zar,116.2,Meat,2025-12-17,simplexpfaira
+income,exp-business,cashsim,zar,532,Earrings,2025-12-17,simplexpfaira
+expense,exp-groceries,cashsim,zar,38.2,Bleach,2025-12-17,simplexpfaira
+expense,exp-utilities,cashsim,zar,50,Electricity,2025-12-17,simplexpfaira
+expense,exp-shopping,cashsim,zar,59.9,Shoes,2025-12-18,simplexpfaira
+expense,exp-groceries,cashsim,zar,59,Vegetables,2025-12-18,simplexpfaira
+expense,exp-utilities,cashsim,zar,100,Electricity,2025-12-19,simplexpfaira
+expense,exp-groceries,cashsim,zar,83.2,Milk,2025-12-20,simplexpfaira
+expense,exp-groceries,bidsim,zar,61.2,Meat,2025-12-23,simplexpfaira
+expense,exp-groceries,cashsim,zar,30,Vegetables,2025-12-23,simplexpfaira
+income,inc-salary,bidsim,zar,11551.91,Akram,2025-12-23,simplexpfaira
+expense,exp-utilities,bidsim,zar,500,Electricity,2025-12-23,simplexpfaira
+expense,exp-transaction-charges,bidsim,zar,2.5,EFT Charges,2025-12-23,simplexpfaira
+expense,exp-groceries,bidsim,zar,1195.51,Food,2025-12-24,simplexpfaira
+expense,exp-groceries,bidsim,zar,74.6,Meat,2025-12-24,simplexpfaira
+expense,exp-business,bidsim,zar,160,Earrings,2025-12-24,simplexpfaira
+expense,exp-telecommunications,bidsim,zar,100,Airtime,2025-12-25,simplexpfaira
+expense,exp-business,bidsim,zar,496,Earrings,2025-12-25,simplexpfaira
+expense,exp-transaction-charges,bidsim,zar,24.12,Online Charges,2025-12-25,simplexpfaira
+expense,exp-groceries,bidsim,zar,175.95,Food,2025-12-25,simplexpfaira
+income,exp-business,cashsim,zar,527.2,Earrings,2025-12-26,simplexpfaira
+expense,exp-groceries,bidsim,zar,434.15,Diapers,2025-12-27,simplexpfaira
+income,exp-business,cashsim,zar,400,Earrings,2025-12-28,simplexpfaira
+expense,exp-shopping,cashsim,zar,100,Haircut,2025-12-29,simplexpfaira
+expense,exp-transportation,cashsim,zar,10,Taxi,2025-12-29,simplexpfaira
+expense,exp-groceries,cashsim,zar,10,Vegetables,2025-12-29,simplexpfaira
+expense,exp-groceries,cashsim,zar,100,Food,2025-12-29,simplexpfaira
+expense,exp-groceries,bidsim,zar,49.27,Drink,2025-12-29,simplexpfaira
+expense,exp-utilities,bidsim,zar,100,Electricity,2025-12-29,simplexpfaira
+expense,exp-transaction-charges,bidsim,zar,2.5,EFT Charges,2025-12-29,simplexpfaira
+expense,exp-shopping,cashsim,zar,100,Photoshoot,2025-12-30,simplexpfaira
+expense,exp-transportation,bidsim,zar,58,Bolt,2025-12-30,simplexpfaira
+expense,exp-business,bidsim,zar,259.55,Earrings,2025-12-30,simplexpfaira
+expense,exp-transaction-charges,bidsim,zar,30,Monthly Account Fee,2025-12-31,simplexpfaira
+expense,exp-utilities,bidsim,zar,2500,Rent,2025-12-31,simplexpfaira
+expense,exp-utilities,cashsim,zar,50,Electricity,2025-12-31,simplexpfaira
+expense,exp-transaction-charges,bidsim,zar,3.5,EFT Charges,2026-01-01,simplexpfaira
+expense,exp-telecommunications,cashsim,zar,120,WiFi,2026-01-01,simplexpfaira
+expense,exp-utilities,cashsim,zar,200,Water,2026-01-01,simplexpfaira
+expense,exp-transportation,bidsim,zar,27,Bolt,2026-01-02,simplexpfaira
+expense,exp-groceries,bidsim,zar,71.84,Meat,2026-01-02,simplexpfaira
+expense,exp-healthcare,bidsim,zar,551.45,Medication,2026-01-02,simplexpfaira
+transfer,trf-transfer-out,bidsim,zar,625,Inter Account Transfer,2026-01-02,simplexpfaira
+transfer,trf-transfer-in,cashsim,zar,625,Inter Account Transfer,2026-01-02,simplexpfaira
+expense,exp-groceries,cashsim,zar,41.5,Vegetables,2026-01-03,simplexpfaira
+expense,exp-groceries,cashsim,zar,17,Hardware,2026-01-03,simplexpfaira
+expense,exp-shopping,bidsim,zar,169.86,Towel,2026-01-03,simplexpfaira
+expense,exp-furniture,bidsim,zar,100,Blower,2026-01-03,simplexpfaira
+expense,exp-furniture,cashsim,zar,70,Accessories,2026-01-03,simplexpfaira
+expense,exp-transaction-charges,bidsim,zar,8,EFT Charges,2026-01-03,simplexpfaira
+expense,exp-utilities,bidsim,zar,600,Electricity,2026-01-04,simplexpfaira
+expense,exp-transaction-charges,bidsim,zar,2.5,EFT Charges,2026-01-04,simplexpfaira
+transfer,trf-transfer-out,cashsim,zar,100,Betty,2026-01-05,simplexpfaira
+transfer,trf-transfer-in,payable,zar,100,Betty,2026-01-05,simplexpfaira
+expense,exp-transaction-charges,bidsim,zar,24.22,Online Charges,2026-01-08,simplexpfaira
+expense,exp-business,bidsim,zar,253,Earrings,2026-01-08,simplexpfaira
+expense,exp-groceries,bidsim,zar,142.61,Meat,2026-01-08,simplexpfaira
+income,exp-business,cashsim,zar,230,Earrings,2026-01-09,simplexpfaira
+expense,exp-groceries,cashsim,zar,51.2,Bread,2026-01-10,simplexpfaira
+expense,exp-family,cashsim,zar,366,T4T,2026-01-10,simplexpfaira
+expense,exp-groceries,cashsim,zar,52.6,Vegetables,2026-01-10,simplexpfaira
+expense,exp-utilities,bidsim,zar,50,Electricity,2026-01-12,simplexpfaira
+expense,exp-transaction-charges,bidsim,zar,2.5,EFT Charges,2026-01-12,simplexpfaira
+expense,exp-healthcare,bidsim,zar,101.42,Medication,2026-01-14,simplexpfaira
+expense,exp-groceries,bidsim,zar,100.02,Meat,2026-01-14,simplexpfaira
+expense,exp-healthcare,bidsim,zar,1900,Spectacles,2026-01-16,simplexpfaira
+expense,exp-transaction-charges,bidsim,zar,29,ATM Charges,2026-01-16,simplexpfaira
+expense,exp-groceries,bidsim,zar,55.32,Meat,2026-01-16,simplexpfaira
+expense,exp-groceries,bidsim,zar,288.89,Food,2026-01-17,simplexpfaira
+expense,exp-utilities,bidsim,zar,30,Electricity,2026-01-17,simplexpfaira
+expense,exp-transaction-charges,bidsim,zar,2.5,EFT Charges,2026-01-17,simplexpfaira
+transfer,trf-transfer-out,cashsim,zar,200,Kyle,2026-01-18,simplexpfaira
+transfer,trf-transfer-in,receivable,zar,200,Kyle,2026-01-18,simplexpfaira
+expense,exp-business,bidsim,zar,101.15,Earrings,2026-01-20,simplexpfaira
+income,exp-business,cashsim,zar,139.6,Earrings,2026-01-20,simplexpfaira
+expense,exp-groceries,cashsim,zar,80,Meat,2026-01-21,simplexpfaira
+expense,exp-groceries,cashsim,zar,20,Vegetables,2026-01-21,simplexpfaira
+expense,exp-transportation,cashsim,zar,10,Taxi,2026-01-21,simplexpfaira
+transfer,trf-transfer-out,receivable,zar,200,Kyle,2026-01-22,simplexpfaira
+transfer,trf-transfer-out,cashsim,zar,200,Kyle,2026-01-22,simplexpfaira
+expense,exp-transportation,cashsim,zar,1000,Zimbabwe Trip,2026-01-24,simplexpfaira
+expense,exp-business,cashbee,usd,65,Rent,2026-01-24,simplexpfaira
+transfer,trf-transfer-in,cashbee,usd,95,Inter Account Transfer,2026-01-24,simplexpfaira
+transfer,trf-transfer-out,paypsim,usd,95,Inter Account Transfer,2026-01-24,simplexpfaira
+expense,exp-transaction-charges,paypsim,usd,5.47,Service Fees,2026-01-24,simplexpfaira
+expense,exp-transaction-charges,paypsim,usd,5.27,Agent Fees,2026-01-24,simplexpfaira
+transfer,trf-transfer-in,cashsim,zar,1100,Inter Account Transfer,2026-01-24,simplexpfaira
+expense,exp-church,cashsim,zar,5,Offering,2026-01-25,simplexpfaira
+income,exp-business,cashsim,zar,86,Earrings,2026-01-26,simplexpfaira
+expense,exp-groceries,cashsim,zar,5,Snack,2026-01-26,simplexpfaira
+expense,exp-groceries,bidsim,zar,29.05,Bread,2026-01-26,simplexpfaira
+expense,exp-business,bidsim,zar,96.4,Earrings,2026-01-26,simplexpfaira
+income,inc-salary,bidsim,zar,7926.3,Akram,2026-01-29,simplexpfaira
+expense,exp-business,bidsim,zar,105.32,Earrings,2026-01-31,simplexpfaira
+expense,exp-transaction-charges,bidsim,zar,99,Monthly Account Fee,2026-01-31,simplexpfaira
+expense,exp-groceries,bidsim,zar,160.67,Meat,2026-01-31,simplexpfaira
+expense,exp-groceries,bidsim,zar,321.45,Food,2026-01-31,simplexpfaira
+expense,exp-education,bidsim,zar,1300,UKZN,2026-01-31,simplexpfaira
+expense,exp-transaction-charges,bidsim,zar,17.39,Online Charges,2026-01-31,simplexpfaira
+expense,exp-business,bidsim,zar,73.55,Earrings,2026-01-31,simplexpfaira
+expense,exp-utilities,bidsim,zar,2500,Rent,2026-01-31,simplexpfaira
+expense,exp-groceries,cashsim,zar,10,Vegetables,2026-01-31,simplexpfaira
+expense,exp-transaction-charges,bidsim,zar,14,ATM Charges,2026-02-01,simplexpfaira
+expense,exp-telecommunications,cashsim,zar,120,WiFi,2026-02-01,simplexpfaira
+expense,exp-utilities,cashsim,zar,200,Water,2026-02-01,simplexpfaira
+transfer,trf-transfer-out,bidsim,zar,1800,Inter Account Transfer,2026-02-01,simplexpfaira
+transfer,trf-transfer-out,cashsim,zar,1600,Inter Account Transfer,2026-02-01,simplexpfaira
+transfer,trf-transfer-in,cashsim,zar,1800,Inter Account Transfer,2026-02-01,simplexpfaira
+income,exp-business,cashsim,zar,400,Earrings,2026-02-04,simplexpfaira
+income,exp-business,cashsim,zar,320,Earrings,2026-02-05,simplexpfaira

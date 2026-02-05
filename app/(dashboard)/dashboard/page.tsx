@@ -117,7 +117,8 @@ function DashboardView({
         0,
       ) || 0;
 
-  const recentTransactions = transactions?.slice(0, 5) || [];
+  const recentTransactions =
+    transactions?.filter((t) => t.type !== "transfer").slice(0, 5) || [];
 
   return (
     <div className="flex flex-col space-y-6 p-2 md:p-6">
@@ -234,13 +235,13 @@ function DashboardView({
                     </div>
 
                     <span
-                      className={`font-medium ${
-                        transaction.type === "income"
+                      className={`font-medium text-sm ${
+                        transaction.type === "income" ||
+                        transaction.category === "trf-transfer-in"
                           ? "text-emerald-600"
                           : "text-destructive"
                       }`}
                     >
-                      {transaction.type === "income" ? "+" : "-"}
                       {convertAndFormat(
                         transaction.amount,
                         transaction.currency,

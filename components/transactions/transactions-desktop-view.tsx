@@ -12,14 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  MoreHorizontal,
-  Pencil,
   Trash2,
   ArrowUpCircle,
   ArrowDownCircle,
@@ -41,13 +33,11 @@ type TransactionsDesktopViewProps = {
   transactions: TransactionResponse[];
   rate: RateResponse;
   user: UserResponse;
-  setEditingTransaction: Dispatch<SetStateAction<TransactionResponse | null>>;
   setDeletingTransaction: Dispatch<SetStateAction<TransactionResponse | null>>;
 };
 
 const TransactionsDesktopView = ({
   transactions,
-  setEditingTransaction,
   setDeletingTransaction,
   rate,
   user,
@@ -140,29 +130,19 @@ const TransactionsDesktopView = ({
           const transaction = row.original;
 
           return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <MoreHorizontal className="h-4 w-4" />
-                  <span className="sr-only">Open menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => setEditingTransaction(transaction)}
-                >
-                  <Pencil className="w-4 h-4" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  variant="destructive"
+            <div className="flex justify-center">
+              {user.username === transaction.username && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-destructive"
                   onClick={() => setDeletingTransaction(transaction)}
                 >
                   <Trash2 className="w-4 h-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  <span className="sr-only">Delete</span>
+                </Button>
+              )}
+            </div>
           );
         },
       },

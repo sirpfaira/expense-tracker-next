@@ -6,11 +6,8 @@ export const accountSchema = z.object({
   shortCode: z
     .string()
     .min(3, "3+ chars required")
-    .max(8, "Max 8 chars")
-    .regex(
-      /^[a-zA-Z0-9_]+$/,
-      "Short code can only contain letters, numbers, and underscores",
-    ),
+    .max(10, "Max 10 chars")
+    .regex(/^[a-zA-Z0-9_]+$/, "Only letters and numbers"),
   type: z.enum(["bank", "cash", "savings"]),
   currency: z.enum(["zar", "usd"]),
   balance: z.coerce.number(),

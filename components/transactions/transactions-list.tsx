@@ -2,13 +2,6 @@
 
 import { useState } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -20,18 +13,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ArrowDownCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { TransactionForm } from "./transaction-form";
-import {
-  TransactionInput,
-  TransactionResponse,
-} from "@/lib/models/transaction";
-import {
-  useUpdateTransaction,
-  useDeleteTransaction,
-} from "@/hooks/use-transactions";
+import { TransactionResponse } from "@/lib/models/transaction";
+import { useDeleteTransaction } from "@/hooks/use-transactions";
 import { toast } from "sonner";
-import { CategoryResponse } from "@/lib/models/category";
-import { AccountResponse } from "@/lib/models/account";
 import { UserResponse } from "@/lib/models/user";
 import { RateResponse } from "@/lib/models/summary";
 import TransactionsMobileView from "./transactions-mobile-view";
@@ -39,44 +23,19 @@ import TransactionsDesktopView from "./transactions-desktop-view";
 
 interface TransactionsListProps {
   transactions: TransactionResponse[];
-  categories: CategoryResponse[];
-  accounts: AccountResponse[];
   rate: RateResponse;
   user: UserResponse;
 }
 
 export function TransactionsList({
   transactions,
-  categories,
-  accounts,
   rate,
   user,
 }: TransactionsListProps) {
   const isMobile = useIsMobile();
-  const [editingTransaction, setEditingTransaction] =
-    useState<TransactionResponse | null>(null);
   const [deletingTransaction, setDeletingTransaction] =
     useState<TransactionResponse | null>(null);
-
-  const updateMutation = useUpdateTransaction();
   const deleteMutation = useDeleteTransaction();
-
-  const handleUpdate = async (data: TransactionInput) => {
-    if (!editingTransaction) return;
-
-    try {
-      await updateMutation.mutateAsync({
-        id: editingTransaction.id,
-        ...data,
-      });
-      toast.success("Transaction updated successfully");
-      setEditingTransaction(null);
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to update transaction",
-      );
-    }
-  };
 
   const handleDelete = async () => {
     if (!deletingTransaction) return;
@@ -113,7 +72,6 @@ export function TransactionsList({
       {isMobile ? (
         <TransactionsMobileView
           transactions={transactions}
-          setEditingTransaction={setEditingTransaction}
           setDeletingTransaction={setDeletingTransaction}
           rate={rate}
           user={user}
@@ -121,35 +79,11 @@ export function TransactionsList({
       ) : (
         <TransactionsDesktopView
           transactions={transactions}
-          setEditingTransaction={setEditingTransaction}
           setDeletingTransaction={setDeletingTransaction}
           rate={rate}
           user={user}
         />
       )}
-
-      {/* Edit Dialog */}
-      <Dialog
-        open={!!editingTransaction}
-        onOpenChange={(open) => !open && setEditingTransaction(null)}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Transaction</DialogTitle>
-            <DialogDescription>
-              Update the transaction details below.
-            </DialogDescription>
-          </DialogHeader>
-          <TransactionForm
-            categories={categories}
-            accounts={accounts}
-            transaction={editingTransaction}
-            onSubmit={handleUpdate}
-            onCancel={() => setEditingTransaction(null)}
-            isLoading={updateMutation.isPending}
-          />
-        </DialogContent>
-      </Dialog>
 
       {/* Delete Confirmation */}
       <AlertDialog

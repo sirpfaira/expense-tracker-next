@@ -1,30 +1,31 @@
 "use client";
 
 import { Dispatch, SetStateAction } from "react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Pencil, Trash2 } from "lucide-react";
 import { TransactionResponse } from "@/lib/models/transaction";
 import { formatCategory, convertAndFormat, formatDate } from "@/lib/utils";
 import { UserResponse } from "@/lib/models/user";
 import { RateResponse } from "@/lib/models/summary";
 import { Virtuoso } from "react-virtuoso";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 
 type TransactionsMobileViewProps = {
   transactions: TransactionResponse[];
   rate: RateResponse;
   user: UserResponse;
-  setEditingTransaction: Dispatch<SetStateAction<TransactionResponse | null>>;
   setDeletingTransaction: Dispatch<SetStateAction<TransactionResponse | null>>;
 };
 
 const TransactionsMobileView = ({
   transactions,
-  setEditingTransaction,
   setDeletingTransaction,
   rate,
   user,
@@ -36,59 +37,13 @@ const TransactionsMobileView = ({
           style={{ height: "100%" }}
           data={transactions}
           itemContent={(_, transaction) => (
-            <DropdownMenu key={transaction.id}>
-              <DropdownMenuTrigger asChild>
-                <div
-                  key={transaction.id}
-                  className="flex items-center justify-between py-2"
-                >
-                  <div className="flex items-center gap-3 max-w-[70%]">
-                    <div className="w-full">
-                      <p className="text-sm font-medium">
-                        {formatCategory(transaction.category)}
-                      </p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        <span> {formatDate(transaction.date, "SHORT")}</span>
-                        <span> - </span>
-                        <span className="capitalize">
-                          {transaction.description}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-                  <span
-                    className={`font-medium text-sm ${
-                      transaction.type === "income" ||
-                      transaction.category === "trf-transfer-in"
-                        ? "text-emerald-600"
-                        : "text-destructive"
-                    }`}
-                  >
-                    {convertAndFormat(
-                      transaction.amount,
-                      transaction.currency,
-                      user.currency,
-                      rate,
-                    )}
-                  </span>
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => setEditingTransaction(transaction)}
-                >
-                  <Pencil className="w-4 h-4" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  variant="destructive"
-                  onClick={() => setDeletingTransaction(transaction)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <TransactionCard
+              key={transaction.id}
+              transaction={transaction}
+              rate={rate}
+              user={user}
+              setDeletingTransaction={setDeletingTransaction}
+            />
           )}
         />
       </div>
@@ -97,3 +52,115 @@ const TransactionsMobileView = ({
 };
 
 export default TransactionsMobileView;
+
+type TransactionCardProps = {
+  transaction: TransactionResponse;
+  rate: RateResponse;
+  user: UserResponse;
+  setDeletingTransaction: Dispatch<SetStateAction<TransactionResponse | null>>;
+};
+
+function TransactionCard({
+  transaction,
+  rate,
+  user,
+  setDeletingTransaction,
+}: TransactionCardProps) {
+  return (
+    <Drawer>
+      <DrawerTrigger className="w-full">
+        <div className="flex items-center justify-between py-2 w-full">
+          <div className="flex items-center gap-3 max-w-[70%]">
+            <div className="flex flex-col items-start w-full">
+              <p className="text-sm font-medium">
+                {formatCategory(transaction.category)}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                <span> {formatDate(transaction.date, "SHORT")}</span>
+                <span> - </span>
+                <span className="capitalize">{transaction.description}</span>
+              </p>
+            </div>
+          </div>
+          <span
+            className={`font-medium text-sm ${
+              transaction.type === "income" ||
+              transaction.category === "trf-transfer-in"
+                ? "text-emerald-600"
+                : "text-destructive"
+            }`}
+          >
+            {convertAndFormat(
+              transaction.amount,
+              transaction.currency,
+              user.currency,
+              rate,
+            )}
+          </span>
+        </div>
+      </DrawerTrigger>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>Transaction Details</DrawerTitle>
+          <DrawerDescription>
+            View and delete transaction details here.
+          </DrawerDescription>
+        </DrawerHeader>
+        <div className="flex items-center justify-between py-2 px-5">
+          <div className="flex items-center gap-3 max-w-[70%]">
+            <div className="w-full">
+              <p className="text-sm font-medium">
+                <span className="capitalize text-sm font-medium">
+                  {transaction.description}
+                </span>
+              </p>
+              <div className="text-xs text-muted-foreground truncate">
+                <p>
+                  {transaction.account.toUpperCase()} <span> - </span>
+                  <span className="capitalize">{transaction.type}</span>
+                  <span> - </span>
+                  <span className="">
+                    {formatCategory(transaction.category)}
+                  </span>
+                </p>
+                <p> {formatDate(transaction.date, "FULL")}</p>
+              </div>
+            </div>
+          </div>
+          <span
+            className={`font-medium text-sm ${
+              transaction.type === "income" ||
+              transaction.category === "trf-transfer-in"
+                ? "text-emerald-600"
+                : "text-destructive"
+            }`}
+          >
+            {convertAndFormat(
+              transaction.amount,
+              transaction.currency,
+              user.currency,
+              rate,
+            )}
+          </span>
+        </div>
+        <DrawerFooter>
+          {user.username === transaction.username && (
+            <DrawerClose>
+              <span
+                className="flex items-center w-full justify-center bg-destructive text-primary-foreground rounded-md p-1.5"
+                onClick={() => setDeletingTransaction(transaction)}
+              >
+                Delete
+              </span>
+            </DrawerClose>
+          )}
+          <DrawerClose>
+            <span className="flex items-center w-full justify-center bg-primary text-primary-foreground rounded-md p-1.5">
+              Close
+            </span>
+          </DrawerClose>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
+  );
+}
