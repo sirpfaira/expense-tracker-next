@@ -55,6 +55,7 @@ import CurrencyForm from "@/components/settings/currency-form";
 import { CurrencyFormValues } from "@/lib/models/summary";
 import { Switch } from "@/components/ui/switch";
 import ThemeButton from "@/components/layout/theme-button";
+import Link from "next/link";
 
 export default function SettingsPage() {
   const { user, logout, refetchUser } = useAuth();
@@ -203,62 +204,6 @@ export default function SettingsPage() {
       );
     } finally {
       setIsDeletingAccount(false);
-    }
-  };
-
-  const handleExportData = async () => {
-    try {
-      // Fetch all user data
-      const [
-        accountsRes,
-        transactionsRes,
-        categoriesRes,
-        budgetsRes,
-        wishesRes,
-      ] = await Promise.all([
-        fetch("/api/accounts"),
-        fetch("/api/transactions"),
-        fetch("/api/budgets"),
-        fetch("/api/categories"),
-        fetch("/api/wishes"),
-      ]);
-
-      const [accounts, transactions, categories, budgets, wishes] =
-        await Promise.all([
-          accountsRes.json(),
-          transactionsRes.json(),
-          categoriesRes.json(),
-          budgetsRes.json(),
-          wishesRes.json(),
-        ]);
-
-      const exportData = {
-        exportDate: new Date().toISOString(),
-        user: {
-          name: user?.name,
-        },
-        transactions: transactions.transactions || [],
-        categories: categories.categories || [],
-        budgets: budgets.budgets || [],
-        wishes: wishes.wishes || [],
-        accounts: accounts.accounts || [],
-      };
-
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-        type: "application/json",
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `expense-tracker-export-${new Date().toISOString().split("T")[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      toast.success("Data exported successfully");
-    } catch {
-      toast.error("Failed to export data");
     }
   };
 
@@ -481,29 +426,33 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
       {/* Data Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Download className="size-5" />
-            Data
-          </CardTitle>
-          <CardDescription>Export and manage your data</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="font-medium">Export Data</p>
-              <p className="text-sm text-muted-foreground">
-                Download all your transactions, categories, and budgets
-              </p>
+      {user && user.role === "admin" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Download className="size-5" />
+              Data
+            </CardTitle>
+            <CardDescription>Export and manage your data</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-medium">Export Data</p>
+                <p className="text-sm text-muted-foreground">
+                  Download all your transactions, categories, and budgets
+                </p>
+              </div>
+              <Button variant="outline" asChild>
+                <Link href="/settings/export">
+                  <Download className="size-4" />
+                  Export
+                </Link>
+              </Button>
             </div>
-            <Button variant="outline" onClick={handleExportData}>
-              <Download className="size-4" />
-              Export
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Danger Zone */}
       <Card className="border-destructive/50">

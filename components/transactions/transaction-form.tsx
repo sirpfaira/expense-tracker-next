@@ -37,8 +37,8 @@ import {
 import { CategoryResponse } from "@/lib/models/category";
 
 interface TransactionFormProps {
-  categories: CategoryResponse[] | undefined;
-  accounts: AccountResponse[] | undefined;
+  categories: CategoryResponse[];
+  accounts: AccountResponse[];
   transaction?: TransactionResponse | null;
   onSubmit: (data: TransactionInput) => void;
   onCancel: () => void;

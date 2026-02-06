@@ -86,7 +86,7 @@ function TransactionCard({
             className={`font-medium text-sm ${
               transaction.type === "income" ||
               transaction.category === "trf-transfer-in"
-                ? "text-emerald-600"
+                ? "text-green-600"
                 : "text-destructive"
             }`}
           >
@@ -131,7 +131,7 @@ function TransactionCard({
             className={`font-medium text-sm ${
               transaction.type === "income" ||
               transaction.category === "trf-transfer-in"
-                ? "text-emerald-600"
+                ? "text-green-600"
                 : "text-destructive"
             }`}
           >

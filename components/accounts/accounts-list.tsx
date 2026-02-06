@@ -242,7 +242,7 @@ export function AccountCard({
         <div className="text-right mx-3">
           <p
             className={`font-medium text-lg ${
-              account.balance >= 0 ? "text-emerald-600" : "text-destructive"
+              account.balance >= 0 ? "text-green-600" : "text-destructive"
             }`}
           >
             {convertAndFormat(

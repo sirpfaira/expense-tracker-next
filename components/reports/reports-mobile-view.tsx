@@ -16,58 +16,112 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  PieChart,
-  Pie,
-  Cell,
-  LineChart,
-  Line,
-  ResponsiveContainer,
-} from "recharts";
-import {
-  BarChart3,
-  PieChart as PieChartIcon,
-  TrendingUp,
-  TrendingDown,
-  Calendar,
-} from "lucide-react";
-import { formatCategory, convertAndFormat, convertAmount } from "@/lib/utils";
+  formatCategory,
+  convertAndFormat,
+  convertAmount,
+  formatCurrency,
+} from "@/lib/utils";
 import { TransactionResponse } from "@/lib/models/transaction";
 import { UserResponse } from "@/lib/models/user";
 import { RateResponse } from "@/lib/models/summary";
-
-type TimeRange = "7d" | "30d" | "90d" | "1y" | "all";
-
-const CHART_COLORS = [
-  "#2563eb", // blue
-  "#16a34a", // green
-  "#dc2626", // red
-  "#ca8a04", // yellow
-  "#9333ea", // purple
-  "#0891b2", // cyan
-  "#ea580c", // orange
-  "#64748b", // slate
-  "#db2777", // pink
-  "#059669", // emerald
-];
+import {
+  useCategories,
+  useCreateCategory,
+  useUpdateCategory,
+  useDeleteCategory,
+} from "@/hooks/use-categories";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import {
+  CategoryResponse,
+  CategoryType,
+  ICON_OPTIONS,
+  COLOR_OPTIONS,
+} from "@/lib/models/category";
+import {
+  PieChart as PieChartIcon,
+  TrendingDown,
+  Calendar,
+  Wallet,
+  ArrowUp,
+  ArrowDown,
+  Tags,
+  Plus,
+  Pencil,
+  Trash2,
+  Loader2,
+  Utensils,
+  Car,
+  Film,
+  Zap,
+  HeartPulse,
+  ShoppingBag,
+  GraduationCap,
+  Plane,
+  Briefcase,
+  Laptop,
+  TrendingUp,
+  Gift,
+  PlusCircle,
+  MinusCircle,
+  Home,
+  Phone,
+  Wifi,
+  Music,
+  Gamepad2,
+  Dumbbell,
+  Coffee,
+  Beer,
+  Pizza,
+  Shirt,
+  Scissors,
+  Palette,
+  Book,
+  Newspaper,
+  PiggyBank,
+  Type as TypeIcon,
+  LucideIcon,
+  ShoppingBasket,
+  BriefcaseBusiness,
+  Sofa,
+  Church,
+  CircleDollarSign,
+} from "lucide-react";
+import { useAuth } from "@/components/providers/auth-provider";
+import LoadingIndicator from "@/components/layout/loading-indicator";
 
 type ReportsMobileViewProps = {
   transactions: TransactionResponse[];
+  categories: CategoryResponse[];
   user: UserResponse;
   rate: RateResponse;
 };
 
 export default function ReportsMobileView({
   transactions,
+  categories,
   user,
   rate,
 }: ReportsMobileViewProps) {
@@ -99,28 +153,27 @@ export default function ReportsMobileView({
     return transactions.filter((t) => new Date(t.date) >= cutoffDate);
   }, [transactions, timeRange]);
 
-  const summaryStats = useMemo(() => {
-    const income = filteredTransactions
-      .filter((t) => t.type === "income")
-      .reduce(
-        (sum, t) =>
-          sum + convertAmount(t.amount, t.currency, user.currency, rate),
-        0,
-      );
-    const expenses = filteredTransactions
-      .filter((t) => t.type === "expense")
-      .reduce(
-        (sum, t) =>
-          sum + convertAmount(t.amount, t.currency, user.currency, rate),
-        0,
-      );
-    const balance = income - expenses;
-    const transactionCount = filteredTransactions.length;
+  const income = useMemo(() => {
+    const expensesByCategory: Record<string, number> = {};
 
-    return { income, expenses, balance, transactionCount };
+    filteredTransactions
+      .filter((t) => t.type === "income")
+      .forEach((t) => {
+        expensesByCategory[t.category] =
+          (expensesByCategory[t.category] || 0) +
+          convertAmount(t.amount, t.currency, user.currency, rate);
+      });
+
+    return Object.entries(expensesByCategory)
+      .map(([name, value], index) => ({
+        name,
+        value,
+        type: "income",
+      }))
+      .sort((a, b) => b.value - a.value);
   }, [filteredTransactions]);
 
-  const categoryData = useMemo(() => {
+  const expenses = useMemo(() => {
     const expensesByCategory: Record<string, number> = {};
 
     filteredTransactions
@@ -135,93 +188,17 @@ export default function ReportsMobileView({
       .map(([name, value], index) => ({
         name,
         value,
-        fill: CHART_COLORS[index % CHART_COLORS.length],
+        type: "expense",
       }))
       .sort((a, b) => b.value - a.value);
   }, [filteredTransactions]);
 
-  const monthlyData = useMemo(() => {
-    const monthlyTotals: Record<string, { income: number; expenses: number }> =
-      {};
-
-    filteredTransactions.forEach((t) => {
-      const date = new Date(t.date);
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-
-      if (!monthlyTotals[monthKey]) {
-        monthlyTotals[monthKey] = { income: 0, expenses: 0 };
-      }
-
-      if (t.type === "income") {
-        monthlyTotals[monthKey].income += convertAmount(
-          t.amount,
-          t.currency,
-          user.currency,
-          rate,
-        );
-      } else {
-        monthlyTotals[monthKey].expenses += convertAmount(
-          t.amount,
-          t.currency,
-          user.currency,
-          rate,
-        );
-      }
-    });
-
-    return Object.entries(monthlyTotals)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([month, data]) => {
-        const [year, monthNum] = month.split("-");
-        const monthNames = [
-          "Jan",
-          "Feb",
-          "Mar",
-          "Apr",
-          "May",
-          "Jun",
-          "Jul",
-          "Aug",
-          "Sep",
-          "Oct",
-          "Nov",
-          "Dec",
-        ];
-        return {
-          month: `${monthNames[parseInt(monthNum) - 1]} ${year}`,
-          income: data.income,
-          expenses: data.expenses,
-          net: data.income - data.expenses,
-        };
-      });
-  }, [filteredTransactions]);
-
-  const dailyData = useMemo(() => {
-    const dailyTotals: Record<string, number> = {};
-
-    filteredTransactions
-      .filter((t) => t.type === "expense")
-      .forEach((t) => {
-        const dateKey = t.date.split("T")[0];
-        dailyTotals[dateKey] =
-          (dailyTotals[dateKey] || 0) +
-          convertAmount(t.amount, t.currency, user.currency, rate);
-      });
-
-    return Object.entries(dailyTotals)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .slice(-30)
-      .map(([date, amount]) => ({
-        date: new Date(date).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        }),
-        amount,
-      }));
-  }, [filteredTransactions]);
+  const totalIncome = income.reduce((sum, t) => sum + t.value, 0);
+  const totalExpenses = expenses.reduce((sum, t) => sum + t.value, 0);
+  const netCashflow = totalIncome - totalExpenses;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="flex flex-col p-2 space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Reports</h1>
@@ -246,298 +223,154 @@ export default function ReportsMobileView({
           </SelectContent>
         </Select>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Total Income</CardDescription>
-            <CardTitle className="text-2xl text-green-600">
-              {convertAndFormat(
-                summaryStats.income,
-                user.currency,
-                user.currency,
-                rate,
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <TrendingUp className="size-3 text-green-600" />
-              <span>
-                {filteredTransactions.filter((t) => t.type === "income").length}
-              </span>
-              <span>transactions</span>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Total Expenses</CardDescription>
-            <CardTitle className="text-2xl text-destructive">
-              {convertAndFormat(
-                summaryStats.expenses,
-                user.currency,
-                user.currency,
-                rate,
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <TrendingDown className="size-3 text-destructive" />
-              <span>
-                {
-                  filteredTransactions.filter((t) => t.type === "expense")
-                    .length
-                }
-              </span>
-              <span>transactions</span>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Net Cashflow</CardDescription>
-            <CardTitle
-              className={`text-2xl ${summaryStats.balance >= 0 ? "text-green-600" : "text-destructive"}`}
-            >
-              {convertAndFormat(
-                summaryStats.balance,
-                user.currency,
-                user.currency,
-                rate,
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              {summaryStats.balance >= 0 ? (
-                <TrendingUp className="size-3 text-green-600" />
-              ) : (
-                <TrendingDown className="size-3 text-destructive" />
-              )}
-              {summaryStats.balance >= 0 ? "Positive" : "Negative"} cash flow
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Transactions</CardDescription>
-            <CardTitle className="text-2xl">
-              {summaryStats.transactionCount}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <BarChart3 className="size-3" />
-              Total recorded
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="size-5" />
-              Income vs Expenses
-            </CardTitle>
-            <CardDescription>
-              Monthly comparison of income and expenses
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {monthlyData.length > 0 ? (
-              <ChartContainer
-                config={{
-                  income: { label: "Income", color: "#16a34a" },
-                  expenses: { label: "Expenses", color: "#dc2626" },
-                }}
-                className="h-75"
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={monthlyData}
-                    margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      className="stroke-muted"
-                    />
-                    <XAxis
-                      dataKey="month"
-                      tick={{ fontSize: 12 }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 12 }}
-                      tickLine={false}
-                      axisLine={false}
-                      tickFormatter={(v) => `$${v}`}
-                    />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar
-                      dataKey="income"
-                      fill="#16a34a"
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="expenses"
-                      fill="#dc2626"
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            ) : (
-              <div className="flex items-center justify-center h-75 text-muted-foreground">
-                No data available for the selected period
-              </div>
-            )}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <PieChartIcon className="size-5" />
-              Expenses by Category
-            </CardTitle>
-            <CardDescription>
-              Distribution of spending across categories
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {categoryData.length > 0 ? (
-              <ChartContainer
-                config={Object.fromEntries(
-                  categoryData.map((item) => [
-                    item.name,
-                    { label: item.name, color: item.fill },
-                  ]),
-                )}
-                className="h-75"
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <ChartTooltip
-                      content={({ active, payload }) => {
-                        if (active && payload && payload.length) {
-                          const data = payload[0].payload;
-                          return (
-                            <div className="bg-background border border-border rounded-lg p-2 shadow-lg">
-                              <p className="font-medium">
-                                {formatCategory(data.name)}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {convertAndFormat(
-                                  data.value,
-                                  user.currency,
-                                  user.currency,
-                                  rate,
-                                )}
-                              </p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
-                    <Pie
-                      data={categoryData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={2}
-                      dataKey="value"
-                    >
-                      {categoryData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            ) : (
-              <div className="flex items-center justify-center h-75 text-muted-foreground">
-                No expense data available
-              </div>
-            )}
-            {categoryData.length > 0 && (
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                {categoryData.slice(0, 6).map((item) => (
-                  <div
-                    key={item.name}
-                    className="flex items-center gap-2 text-sm"
-                  >
-                    <div
-                      className="size-3 rounded-full shrink-0"
-                      style={{ backgroundColor: item.fill }}
-                    />
-                    <span className="truncate text-muted-foreground">
-                      {formatCategory(item.name)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <TrendingDown className="size-5" />
-            Daily Spending Trend
+            <PieChartIcon className="size-5" />
+            Summary
+          </CardTitle>
+          <CardDescription>Summary of income and expenses</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between w-full px-2 py-3 bg-card rounded-xl border">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-green-500/10 rounded-full text-green-500">
+                  <ArrowUp className="size-6" />
+                </div>
+                <div>
+                  <p className="font-medium">Total Income</p>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <span>
+                      {
+                        filteredTransactions.filter((t) => t.type === "income")
+                          .length
+                      }
+                    </span>
+                    <span>transactions</span>
+                  </div>
+                </div>
+              </div>
+              <h3 className="px-2 text-2xl font-bold text-green-600">
+                {convertAndFormat(
+                  totalIncome,
+                  user.currency,
+                  user.currency,
+                  rate,
+                )}
+              </h3>
+            </div>
+            <div className="flex items-center justify-between w-full px-2 py-3 bg-card rounded-xl border">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-red-500/10 rounded-full text-destructive">
+                  <ArrowDown className="size-6" />
+                </div>
+                <div>
+                  <p className="font-medium">Total Expenses</p>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <span>
+                      {
+                        filteredTransactions.filter((t) => t.type === "expense")
+                          .length
+                      }
+                    </span>
+                    <span>transactions</span>
+                  </div>
+                </div>
+              </div>
+              <h3 className="px-2 text-2xl font-bold text-destructive">
+                {convertAndFormat(
+                  totalExpenses,
+                  user.currency,
+                  user.currency,
+                  rate,
+                )}
+              </h3>
+            </div>
+            <div className="flex items-center justify-between w-full px-2 py-3 bg-card rounded-xl border">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-red-500/10 rounded-full text-destructive">
+                  {netCashflow >= 0 ? (
+                    <TrendingUp className="size-6 text-green-600" />
+                  ) : (
+                    <TrendingDown className="size-6 text-destructive" />
+                  )}
+                </div>
+                <div>
+                  <p className="font-medium">Net Cashflow</p>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    {netCashflow >= 0 ? "Positive" : "Negative"} cash flow
+                  </div>
+                </div>
+              </div>
+              <h3
+                className={`text-2xl px-2 font-bold ${netCashflow >= 0 ? "text-green-600" : "text-destructive"}`}
+              >
+                {convertAndFormat(
+                  Math.abs(netCashflow),
+                  user.currency,
+                  user.currency,
+                  rate,
+                )}
+              </h3>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <PieChartIcon className="size-5" />
+            Income by Category
           </CardTitle>
           <CardDescription>
-            Your expense pattern over the last 30 days
+            Distribution of income across categories
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {dailyData.length > 0 ? (
-            <ChartContainer
-              config={{
-                amount: { label: "Spending", color: "#2563eb" },
-              }}
-              className="h-62.5"
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={dailyData}
-                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    className="stroke-muted"
-                  />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 11 }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 12 }}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(v) => `$${v}`}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line
-                    type="monotone"
-                    dataKey="amount"
-                    stroke="#2563eb"
-                    strokeWidth={2}
-                    dot={false}
-                    activeDot={{ r: 4 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </ChartContainer>
+          {expenses.length > 0 ? (
+            <div className="flex flex-col divide-y border-y my-1">
+              {income.map((expense, index) => (
+                <CategoryCard
+                  key={index}
+                  item={expense}
+                  categories={categories}
+                  user={user}
+                />
+              ))}
+            </div>
           ) : (
-            <div className="flex items-center justify-center h-62.5 text-muted-foreground">
-              No expense data available for the selected period
+            <div className="flex items-center justify-center h-75 text-muted-foreground">
+              No expense data available
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <PieChartIcon className="size-5" />
+            Expenses by Category
+          </CardTitle>
+          <CardDescription>
+            Distribution of spending across categories
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {expenses.length > 0 ? (
+            <div className="flex flex-col divide-y border-y my-1">
+              {expenses.map((expense, index) => (
+                <CategoryCard
+                  key={index}
+                  item={expense}
+                  categories={categories}
+                  user={user}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-75 text-muted-foreground">
+              No expense data available
             </div>
           )}
         </CardContent>
@@ -545,3 +378,80 @@ export default function ReportsMobileView({
     </div>
   );
 }
+type CategoryCardProps = {
+  item: CategoryItem;
+  categories: CategoryResponse[];
+  user: UserResponse;
+};
+
+function CategoryCard({ item, categories, user }: CategoryCardProps) {
+  const category = categories.find((cat) => cat.uid === item.name);
+  const catIconString = category?.icon || "circle-dollar-sign";
+  const color = category?.color || "#3b82f6";
+  const IconComponent = ICON_MAP[catIconString];
+  return (
+    <div className="flex flex-col py-4">
+      <div className="flex justify-between items-center w-full gap-4">
+        <div className="flex items-center gap-3">
+          <div
+            className="size-10 rounded-lg flex items-center justify-center"
+            style={{ backgroundColor: `${color}20` }}
+          >
+            <IconComponent className="size-6" style={{ color }} />
+          </div>
+          <div>
+            <p>{formatCategory(item.name)}</p>
+          </div>
+        </div>
+        <h3
+          className={`font-medium mx-1 ${item.type === "income" ? "text-green-600" : "text-destructive"}`}
+        >
+          {formatCurrency(item.value, user.currency)}
+        </h3>
+      </div>
+    </div>
+  );
+}
+type CategoryItem = {
+  name: string;
+  value: number;
+  type: string;
+};
+type TimeRange = "7d" | "30d" | "90d" | "1y" | "all";
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  utensils: Utensils,
+  car: Car,
+  film: Film,
+  zap: Zap,
+  "heart-pulse": HeartPulse,
+  "shopping-bag": ShoppingBag,
+  "shopping-basket": ShoppingBasket,
+  "graduation-cap": GraduationCap,
+  plane: Plane,
+  briefcase: Briefcase,
+  "briefcase-business": BriefcaseBusiness,
+  laptop: Laptop,
+  "trending-up": TrendingUp,
+  gift: Gift,
+  "plus-circle": PlusCircle,
+  "minus-circle": MinusCircle,
+  home: Home,
+  church: Church,
+  sofa: Sofa,
+  phone: Phone,
+  wifi: Wifi,
+  music: Music,
+  "gamepad-2": Gamepad2,
+  dumbbell: Dumbbell,
+  coffee: Coffee,
+  beer: Beer,
+  pizza: Pizza,
+  shirt: Shirt,
+  scissors: Scissors,
+  palette: Palette,
+  book: Book,
+  newspaper: Newspaper,
+  "piggy-bank": PiggyBank,
+  "circle-dollar-sign": CircleDollarSign,
+};

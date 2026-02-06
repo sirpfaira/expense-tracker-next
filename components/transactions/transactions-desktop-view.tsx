@@ -63,14 +63,14 @@ const TransactionsDesktopView = ({
           return (
             <div className="flex items-center gap-1.5">
               {transaction.type === "income" && (
-                <ArrowUpCircle className="w-4 h-4 text-emerald-600" />
+                <ArrowUpCircle className="w-4 h-4 text-green-600" />
               )}
               {transaction.type === "expense" && (
                 <ArrowDownCircle className="w-4 h-4 text-destructive" />
               )}
               {transaction.type === "transfer" && (
                 <ArrowRightLeft
-                  className={`w-4 h-4 ${transaction.category === "trf-transfer-in" ? "text-emerald-600" : "text-destructive"}`}
+                  className={`w-4 h-4 ${transaction.category === "trf-transfer-in" ? "text-green-600" : "text-destructive"}`}
                 />
               )}
               <span className="capitalize">{transaction.type}</span>
@@ -115,7 +115,7 @@ const TransactionsDesktopView = ({
               className={`text-right font-medium ${
                 transaction.type === "income" ||
                 transaction.category === "trf-transfer-in"
-                  ? "text-emerald-600"
+                  ? "text-green-600"
                   : "text-destructive"
               }`}
             >

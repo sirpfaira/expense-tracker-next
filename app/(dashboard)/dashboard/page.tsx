@@ -17,6 +17,7 @@ import {
   ArrowDown,
   ArrowUp,
   DollarSign,
+  CircleDollarSign,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -187,21 +188,6 @@ function DashboardView({
             </div>
           </div>
         </div>
-        <div className="px-6 py-4 bg-card rounded-xl border shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-muted-foreground/10 rounded-full text-sidebar-foreground/90">
-              <DollarSign className="h-6 w-6" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                Today's Rate
-              </p>
-              <h3 className="font-bold text-foreground/80">
-                $1 : R{rate.value.toFixed(2)}
-              </h3>
-            </div>
-          </div>
-        </div>
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
         <BudgetCard
@@ -254,7 +240,7 @@ function DashboardView({
                       className={`font-medium text-sm ${
                         transaction.type === "income" ||
                         transaction.category === "trf-transfer-in"
-                          ? "text-emerald-600"
+                          ? "text-green-600"
                           : "text-destructive"
                       }`}
                     >
@@ -279,6 +265,17 @@ function DashboardView({
             </div>
           </CardHeader>
           <CardContent className="grid gap-3">
+            <div className="px-3 py-2 bg-card rounded-md border">
+              <div className="flex items-center gap-4">
+                <CircleDollarSign className="size-6" />
+                <div className="text-sm">
+                  <p className="font-medium">Today's Rate</p>
+                  <p className="font-medium text-muted-foreground text-xs">
+                    $1 : R{rate.value.toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            </div>
             <Button
               variant="outline"
               className="justify-start h-auto py-3 bg-transparent"
@@ -300,7 +297,7 @@ function DashboardView({
               asChild
             >
               <Link href="/transactions">
-                <ArrowUpCircle className="size-6 mr-3 text-emerald-600" />
+                <ArrowUpCircle className="size-6 mr-3 text-green-600" />
                 <div className="text-left">
                   <p className="font-medium">Add Income</p>
                   <p className="text-xs text-muted-foreground">

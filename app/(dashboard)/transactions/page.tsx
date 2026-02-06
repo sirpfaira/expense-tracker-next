@@ -54,49 +54,59 @@ export default function TransactionsPage() {
   };
 
   return (
-    <div className="flex flex-col space-y-3 p-2 md:p-6">
-      <div className="flex items-center justify-between">
-        <div className="md:px-1">
-          <h1 className="text-2xl font-bold text-foreground">Transactions</h1>
-          <p className="text-muted-foreground text-sm">
-            Manage your income and expenses
-          </p>
-        </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="size-4" />
-              <span className="hidden md:inline-block">Add Transaction</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Transaction</DialogTitle>
-              <DialogDescription>
-                Enter the details for your new transaction.
-              </DialogDescription>
-            </DialogHeader>
-            <TransactionForm
-              categories={categories}
-              accounts={accounts}
-              onSubmit={handleCreate}
-              onCancel={() => setIsCreateDialogOpen(false)}
-              isLoading={createMutation.isPending}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
+    <>
       {user && transactions && categories && accounts && rate ? (
-        <TransactionsFilter
-          transactions={transactions}
-          accounts={accounts}
-          rate={rate}
-          user={user}
-        />
+        <div className="flex flex-col space-y-3 p-2 md:p-6">
+          <div className="flex items-center justify-between">
+            <div className="md:px-1">
+              <h1 className="text-2xl font-bold text-foreground">
+                Transactions
+              </h1>
+              <p className="text-muted-foreground text-sm">
+                Manage your income and expenses
+              </p>
+            </div>
+            <Dialog
+              open={isCreateDialogOpen}
+              onOpenChange={setIsCreateDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="size-4" />
+                  <span className="hidden md:inline-block">
+                    Add Transaction
+                  </span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add Transaction</DialogTitle>
+                  <DialogDescription>
+                    Enter the details for your new transaction.
+                  </DialogDescription>
+                </DialogHeader>
+                <TransactionForm
+                  categories={categories}
+                  accounts={accounts}
+                  onSubmit={handleCreate}
+                  onCancel={() => setIsCreateDialogOpen(false)}
+                  isLoading={createMutation.isPending}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          <TransactionsFilter
+            transactions={transactions}
+            accounts={accounts}
+            rate={rate}
+            user={user}
+          />
+        </div>
       ) : (
         <LoadingIndicator />
       )}
-    </div>
+    </>
   );
 }
 

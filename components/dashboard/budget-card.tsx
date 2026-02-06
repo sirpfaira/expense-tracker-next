@@ -165,7 +165,7 @@ const BudgetCard = ({ budgets, transactions, user, rate }: BudgetCardProps) => {
               })}
           </div>
         ) : (
-          <div>No budgeted expenses yet</div>
+          <div className="text-muted-foreground">No budgeted expenses yet</div>
         )}
       </CardContent>
     </Card>
