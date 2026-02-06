@@ -10,6 +10,7 @@ import {
   ArrowDown,
   ArrowLeft,
   ArrowUp,
+  BadgeCheck,
   ChevronLeft,
   Coins,
   TrendingDown,
@@ -72,19 +73,19 @@ export default function AccountTransactionsDetails({
               setEditingAccount={() => {}}
               setDeletingAccount={() => {}}
             />
-            <div className="flex flex-col px-6 py-4 bg-card rounded-xl border shadow-sm">
+            <div className="flex flex-col px-2 md:px-6 py-4 bg-card rounded-xl border shadow-sm">
               <div className="pb-2 px-1">
                 <p className="font-medium">Account Summary</p>
                 <p className="text-sm text-muted-foreground">
                   Get a quick overview of your account balance
                 </p>
               </div>
-              <div className="flex justify-between">
+              <div className="flex gap-4 justify-between px-2">
                 <div className="flex items-center gap-2">
-                  <div className="p-2 bg-green-500/10 rounded-full text-green-500">
+                  <div className="hidden md:flex p-2 bg-green-500/10 rounded-full text-green-500">
                     <ArrowUp className="size-4" />
                   </div>
-                  <h3 className="text-xl font-bold text-green-600">
+                  <h3 className="text-base md:text-xl font-bold text-green-600">
                     {convertAndFormat(
                       cashIn,
                       payload.account.currency,
@@ -92,32 +93,37 @@ export default function AccountTransactionsDetails({
                       rate,
                     )}
                   </h3>
+                  
                 </div>
+                <span className="md:hidden text-muted-foreground">|</span>
                 <div className="flex items-center gap-2">
-                  <div className="p-2 bg-red-500/10 rounded-full text-destructive">
+                  <div className="hidden md:flex p-2 bg-red-500/10 rounded-full text-destructive">
                     <ArrowDown className="size-4" />
                   </div>
-                  <h3 className="text-xl font-bold text-destructive">
+                  <h3 className="text-base md:text-xl font-bold text-destructive">
                     {convertAndFormat(
                       cashOut,
                       payload.account.currency,
                       user.currency,
                       rate,
                     )}
-                  </h3>
-                </div>
+                  </h3>                 
+                </div>                
+                <span className="md:hidden text-muted-foreground">|</span>
                 <div className="flex items-center gap-2">
-                  {balance >= 0 ? (
-                    <div className="p-2 bg-green-500/10 rounded-full text-green-500">
-                      <Coins className="size-4" />
-                    </div>
-                  ) : (
-                    <div className="p-2 bg-red-500/10 rounded-full text-destructive">
-                      <Coins className="size-6" />
-                    </div>
-                  )}
+                  <div className="hidden md:flex items-center gap-2">
+                    {balance >= 0 ? (
+                      <div className="p-2 bg-green-500/10 rounded-full text-green-500">
+                        <Coins className="size-4" />
+                      </div>
+                    ) : (
+                      <div className="p-2 bg-red-500/10 rounded-full text-destructive">
+                        <Coins className="size-6" />
+                      </div>
+                    )}
+                  </div>
                   <h3
-                    className={`text-xl font-bold ${
+                    className={`text-base md:text-xl font-bold ${
                       balance >= 0 ? "text-green-600" : "text-destructive"
                     }`}
                   >
