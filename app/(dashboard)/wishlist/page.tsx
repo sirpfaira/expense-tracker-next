@@ -46,7 +46,7 @@ export default function WishesPage() {
       {user && wishes && accounts ? (
         <div className="flex flex-col space-y-4 p-2 md:p-6">
           <div className="flex items-center justify-between">
-            <div>
+            <div className="px-1">
               <h1 className="text-2xl font-bold text-foreground">Wish List</h1>
               <p className="text-muted-foreground text-sm">
                 View and manage all your wish list items

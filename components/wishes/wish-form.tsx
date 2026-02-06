@@ -84,6 +84,7 @@ export function WishForm({
                   id="form-wish-amount"
                   aria-invalid={fieldState.invalid}
                   placeholder="0.00"
+                  autoComplete="off"
                 />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
@@ -146,19 +147,19 @@ export function WishForm({
             </Field>
           )}
         />
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Controller
             name="priority"
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor="form-wish-priority">Priority</FieldLabel>
-
                 <Input
                   {...field}
                   id="form-wish-priority"
                   aria-invalid={fieldState.invalid}
                   placeholder="0.00"
+                  autoComplete="off"
                 />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
@@ -170,23 +171,30 @@ export function WishForm({
             name="fulfilled"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field orientation="horizontal" data-invalid={fieldState.invalid}>
-                <FieldContent>
-                  <FieldLabel htmlFor="form-account-fulfilled">
-                    Fulfilled
-                  </FieldLabel>
-                  <FieldDescription>Turn on if fulfilled</FieldDescription>
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </FieldContent>
-                <Switch
-                  id="form-account-fulfilled"
-                  name={field.name}
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  aria-invalid={fieldState.invalid}
-                />
+              <Field
+                orientation="horizontal"
+                data-invalid={fieldState.invalid}
+                className="flex items-center py-2 md:py-0"
+              >
+                <div className="flex flex-col space-y-1 w-full h-full">
+                  <FieldLabel>Status</FieldLabel>
+                  <div className="flex p-2 w-full items-center justify-between border rounded-md">
+                    <FieldContent>
+                      <FieldDescription>
+                        {field.value ? "Fulfilled" : "Not Fulfilled"}
+                      </FieldDescription>
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </FieldContent>
+                    <Switch
+                      name={field.name}
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      aria-invalid={fieldState.invalid}
+                    />
+                  </div>
+                </div>
               </Field>
             )}
           />

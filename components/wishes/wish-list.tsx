@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { UserResponse } from "@/lib/models/user";
 import { Progress } from "@/components/ui/progress";
 import { AccountResponse } from "@/lib/models/account";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface WishesListProps {
   wishes: WishResponse[];
@@ -70,6 +71,15 @@ export function WishList({ wishes, accounts, rate, user }: WishesListProps) {
         };
       });
   }, [wishes, accounts]);
+
+  const fulfilledWishes = useMemo(() => {
+    return wishes
+      .filter((t) => t.fulfilled === true)
+      .map((project) => ({
+        ...project,
+        allocation: project.amount,
+      }));
+  }, [wishes]);
 
   const handleUpdate = async (data: WishFormValues) => {
     if (!editingWish) return;
@@ -115,25 +125,44 @@ export function WishList({ wishes, accounts, rate, user }: WishesListProps) {
           </p>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {allocatedWishes
-            .sort((a, b) => b.priority - a.priority)
-            .map((wish) => (
-              <WishCard
-                key={wish.id}
-                wish={wish}
-                rate={rate}
-                user={user}
-                setEditingWish={setEditingWish}
-                setDeletingWish={setDeletingWish}
-              />
-            ))}
-          {wishes.length === 0 && (
-            <div className="col-span-full text-center p-8 text-muted-foreground border border-dashed rounded-lg">
-              No wishes found. Create one to get started.
+        <Tabs defaultValue="pending" className="">
+         <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="pending">Pending</TabsTrigger>
+            <TabsTrigger value="fulfilled">Fulfilled</TabsTrigger>
+          </TabsList>
+          <TabsContent value="pending">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {allocatedWishes
+                .sort((a, b) => b.priority - a.priority)
+                .map((wish) => (
+                  <WishCard
+                    key={wish.id}
+                    wish={wish}
+                    rate={rate}
+                    user={user}
+                    setEditingWish={setEditingWish}
+                    setDeletingWish={setDeletingWish}
+                  />
+                ))}
             </div>
-          )}
-        </div>
+          </TabsContent>
+          <TabsContent value="fulfilled">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {fulfilledWishes
+                .sort((a, b) => b.priority - a.priority)
+                .map((wish) => (
+                  <WishCard
+                    key={wish.id}
+                    wish={wish}
+                    rate={rate}
+                    user={user}
+                    setEditingWish={setEditingWish}
+                    setDeletingWish={setDeletingWish}
+                  />
+                ))}
+            </div>
+          </TabsContent>
+        </Tabs>
       )}
       {/* Edit Dialog */}
       <Dialog

@@ -16,6 +16,7 @@ import {
   TrendingUp,
   ArrowDown,
   ArrowUp,
+  DollarSign,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -182,6 +183,21 @@ function DashboardView({
                   user.currency,
                   rate,
                 )}
+              </h3>
+            </div>
+          </div>
+        </div>
+        <div className="px-6 py-4 bg-card rounded-xl border shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-muted-foreground/10 rounded-full text-sidebar-foreground/90">
+              <DollarSign className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                Today's Rate
+              </p>
+              <h3 className="font-bold text-foreground/80">
+                $1 : R{rate.value.toFixed(2)}
               </h3>
             </div>
           </div>
