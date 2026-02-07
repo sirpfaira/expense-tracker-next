@@ -20,15 +20,18 @@ import { UserResponse } from "@/lib/models/user";
 import { RateResponse } from "@/lib/models/summary";
 import TransactionsMobileView from "./transactions-mobile-view";
 import TransactionsDesktopView from "./transactions-desktop-view";
+import { CategoryResponse } from "@/lib/models/category";
 
 interface TransactionsListProps {
   transactions: TransactionResponse[];
+  categories: CategoryResponse[];
   rate: RateResponse;
   user: UserResponse;
 }
 
 export function TransactionsList({
   transactions,
+  categories,
   rate,
   user,
 }: TransactionsListProps) {
@@ -72,6 +75,7 @@ export function TransactionsList({
       {isMobile ? (
         <TransactionsMobileView
           transactions={transactions}
+          categories={categories}
           setDeletingTransaction={setDeletingTransaction}
           rate={rate}
           user={user}

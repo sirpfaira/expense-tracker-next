@@ -21,10 +21,9 @@ import {
 import {
   EllipsisVertical,
   PencilIcon,
-  ShareIcon,
   TrashIcon,
+  ArrowDownCircle, CreditCard, Banknote, PiggyBank
 } from "lucide-react";
-import { ArrowDownCircle, CreditCard, Banknote, PiggyBank } from "lucide-react";
 import { AccountForm } from "./account-form";
 import { AccountResponse, AccountFormValues } from "@/lib/models/account";
 import { useUpdateAccount, useDeleteAccount } from "@/hooks/use-accounts";
@@ -36,7 +35,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";

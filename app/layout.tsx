@@ -8,7 +8,7 @@ import "./globals.css";
 import ThemeProvider from "@/components/providers/theme-provider";
 
 export const metadata: Metadata = {
-  title: "Expense Tracker",
+  title: "Kai Expense Tracker",
   description: "Track and manage your expenses efficiently",
   generator: "v0.app",
   icons: {

@@ -232,3 +232,10 @@ export const COLOR_OPTIONS = [
   "#f43f5e",
   "#64748b",
 ];
+
+export interface CategoryFormData {
+  name: string;
+  type: CategoryType;
+  icon: string;
+  color: string;
+}

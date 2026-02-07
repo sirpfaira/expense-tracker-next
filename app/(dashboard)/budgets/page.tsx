@@ -79,6 +79,7 @@ function BudgetsFilter({
   };
 
   const currentBudget = useMemo(() => {
+    console.log(currentDate);
     return budgets.find((budget) => {
       const budgetDate = new Date(budget.period);
       return (

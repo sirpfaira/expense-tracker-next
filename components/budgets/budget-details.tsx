@@ -98,9 +98,13 @@ const BudgetDetails = ({
 
   const handleAddExpenseBudget = async (data: BudgetExpenseInput) => {
     try {
+      const month = currentDate.getMonth() + 1;
+      const year = currentDate.getFullYear();
+      //currentDate.toISOString().split("T")[0]
+
       await addBudgetExpense.mutateAsync({
         ...data,
-        period: currentDate.toISOString().split("T")[0],
+        period: `${year}-${month.toString().padStart(2, "0")}-01`,
       });
       toast.success("Budget expense saved successfully");
       setIsCreateDialogOpen(false);
@@ -272,7 +276,7 @@ const BudgetDetails = ({
               </CardAction>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {budget.expenses.map((expense, index) => {
                   const status = getStatusInfo(expense);
                   const StatusIcon = status.icon;
@@ -297,7 +301,7 @@ const BudgetDetails = ({
                     >
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-1">
+                          <div className="flex flex-col md:flex-row md:items-center md:gap-3 mb-1">
                             <h3 className="font-semibold text-foreground">
                               {expense.description}
                             </h3>

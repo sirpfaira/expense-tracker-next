@@ -24,54 +24,13 @@ import {
 import { TransactionResponse } from "@/lib/models/transaction";
 import { UserResponse } from "@/lib/models/user";
 import { RateResponse } from "@/lib/models/summary";
-import {
-  useCategories,
-  useCreateCategory,
-  useUpdateCategory,
-  useDeleteCategory,
-} from "@/hooks/use-categories";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
-import {
-  CategoryResponse,
-  CategoryType,
-  ICON_OPTIONS,
-  COLOR_OPTIONS,
-} from "@/lib/models/category";
+import { CategoryResponse } from "@/lib/models/category";
 import {
   PieChart as PieChartIcon,
   TrendingDown,
   Calendar,
-  Wallet,
   ArrowUp,
   ArrowDown,
-  Tags,
-  Plus,
-  Pencil,
-  Trash2,
-  Loader2,
   Utensils,
   Car,
   Film,
@@ -101,7 +60,6 @@ import {
   Book,
   Newspaper,
   PiggyBank,
-  Type as TypeIcon,
   LucideIcon,
   ShoppingBasket,
   BriefcaseBusiness,
@@ -109,8 +67,6 @@ import {
   Church,
   CircleDollarSign,
 } from "lucide-react";
-import { useAuth } from "@/components/providers/auth-provider";
-import LoadingIndicator from "@/components/layout/loading-indicator";
 
 type ReportsMobileViewProps = {
   transactions: TransactionResponse[];

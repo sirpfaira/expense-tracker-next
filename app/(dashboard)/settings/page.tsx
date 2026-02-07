@@ -56,6 +56,7 @@ import { CurrencyFormValues } from "@/lib/models/summary";
 import { Switch } from "@/components/ui/switch";
 import ThemeButton from "@/components/layout/theme-button";
 import Link from "next/link";
+import LoadingIndicator from "@/components/layout/loading-indicator";
 
 export default function SettingsPage() {
   const { user, logout, refetchUser } = useAuth();
@@ -236,392 +237,383 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="p-2 md:p-6 max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground">
-          Manage your account and preferences
-        </p>
-      </div>
-
-      {/* Profile Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="size-5" />
-            Profile
-          </CardTitle>
-          <CardDescription>Your personal information</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-center gap-4">
-            <Avatar className="size-16">
-              <AvatarFallback className="bg-primary text-primary-foreground text-lg">
-                {user?.name ? getInitials(user.name) : "U"}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="font-semibold text-foreground">{user?.name}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Currency: {user?.currency.toUpperCase() || "N/A"}
-              </p>
-            </div>
+    <>
+      {user ? (
+        <div className="p-2 md:p-6 max-w-3xl space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+            <p className="text-muted-foreground">
+              Manage your account and preferences
+            </p>
           </div>
-          <Separator />
-          {isEditingProfile ? (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  value={profileName}
-                  onChange={(e) => setProfileName(e.target.value)}
-                />
+
+          {/* Profile Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="size-5" />
+                Profile
+              </CardTitle>
+              <CardDescription>Your personal information</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center gap-4">
+                <Avatar className="size-16">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                    {getInitials(user.name)}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-semibold text-foreground">{user.name}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Currency: {user.currency.toUpperCase()}
+                  </p>
+                </div>
               </div>
-              <div className="flex gap-2">
+              <Separator />
+              {isEditingProfile ? (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                      id="name"
+                      value={profileName}
+                      onChange={(e) => setProfileName(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleUpdateProfile}
+                      disabled={isUpdatingProfile}
+                    >
+                      {isUpdatingProfile ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <Check className="size-4" />
+                      )}
+                      Save Changes
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditingProfile(false);
+                        setProfileName(user.name);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="px-1">
+                      <Label className="text-muted-foreground">Name</Label>
+                      <p className="font-medium">{user.name}</p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditingProfile(true)}
+                  >
+                    Edit Profile
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          {/* Security Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="size-5" />
+                Security
+              </CardTitle>
+              <CardDescription>
+                Manage your password and security settings
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-medium">Password</p>
+                  <p className="text-sm text-muted-foreground">
+                    Change your account password
+                  </p>
+                </div>
                 <Button
-                  onClick={handleUpdateProfile}
-                  disabled={isUpdatingProfile}
+                  variant="outline"
+                  onClick={() => setIsChangingPassword(true)}
                 >
-                  {isUpdatingProfile ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <Check className="size-4" />
-                  )}
-                  Save Changes
+                  Change Password
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Preferences Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="size-5" />
+                Preferences
+              </CardTitle>
+              <CardDescription>Customize your experience</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <DollarSign className="size-5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">Currency</p>
+                    <p className="text-sm text-muted-foreground">
+                      Set preferred currency
+                    </p>
+                  </div>
+                </div>
+                <Dialog
+                  open={isCurrencyDialogOpen}
+                  onOpenChange={setIsCurrencyDialogOpen}
+                >
+                  <DialogTrigger asChild>
+                    <Button variant="ghost">
+                      <SquarePen className="size-5 text-muted-foreground" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-106.25">
+                    <DialogHeader>
+                      <DialogTitle>Edit currency</DialogTitle>
+                      <DialogDescription>
+                        Make changes to your preferred currency. Click save when
+                        you&apos;re done.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <CurrencyForm
+                      user={user}
+                      onSubmit={handleUpdateCurrency}
+                      onCancel={() => setIsCurrencyDialogOpen(false)}
+                      isLoading={isUpdatingCurrency}
+                    />
+                  </DialogContent>
+                </Dialog>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Bell className="size-5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">Notifications</p>
+                    <p className="text-sm text-muted-foreground">
+                      Email alerts and reminders
+                    </p>
+                  </div>
+                </div>
+                <Switch id="notifications" className="mx-2" />
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Palette className="size-5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">Theme</p>
+                    <p className="text-sm text-muted-foreground">
+                      Customize the app appearance
+                    </p>
+                  </div>
+                </div>
+                {/* <Badge variant="secondary">Coming Soon</Badge> */}
+                <div className="px-2.5">
+                  <ThemeButton />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          {/* Data Section */}
+          {user.role === "admin" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Download className="size-5" />
+                  Data
+                </CardTitle>
+                <CardDescription>Export and manage your data</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="font-medium">Export Data</p>
+                    <p className="text-sm text-muted-foreground">
+                      Download all your transactions, categories, and budgets
+                    </p>
+                  </div>
+                  <Button variant="outline" asChild>
+                    <Link href="/settings/export">
+                      <Download className="size-4" />
+                      Export
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Danger Zone */}
+          <Card className="border-destructive/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-destructive">
+                <Trash2 className="size-5" />
+                Danger Zone
+              </CardTitle>
+              <CardDescription>
+                Irreversible actions that affect your account
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-medium">Sign Out</p>
+                  <p className="text-sm text-muted-foreground">
+                    Sign out from this device
+                  </p>
+                </div>
+                <Button variant="outline" onClick={() => logout()}>
+                  <LogOut className="size-4" />
+                  Sign Out
+                </Button>
+              </div>
+              <Separator />
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-medium text-destructive">Delete Account</p>
+                  <p className="text-sm text-muted-foreground">
+                    Permanently delete your account and all data
+                  </p>
+                </div>
+                <Button
+                  variant="destructive"
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                >
+                  <Trash2 className="size-4" />
+                  Delete Account
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Change Password Dialog */}
+          <Dialog
+            open={isChangingPassword}
+            onOpenChange={setIsChangingPassword}
+          >
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Change Password</DialogTitle>
+                <DialogDescription>
+                  Enter your current password and choose a new one
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="current-password">Current Password</Label>
+                  <Input
+                    id="current-password"
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">New Password</Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirm New Password</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
                 <Button
                   variant="outline"
                   onClick={() => {
-                    setIsEditingProfile(false);
-                    setProfileName(user?.name || "");
+                    setIsChangingPassword(false);
+                    setCurrentPassword("");
+                    setNewPassword("");
+                    setConfirmPassword("");
                   }}
                 >
                   Cancel
                 </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="px-1">
-                  <Label className="text-muted-foreground">Name</Label>
-                  <p className="font-medium">{user?.name}</p>
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                onClick={() => setIsEditingProfile(true)}
-              >
-                Edit Profile
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-      {/* Security Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="size-5" />
-            Security
-          </CardTitle>
-          <CardDescription>
-            Manage your password and security settings
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="font-medium">Password</p>
-              <p className="text-sm text-muted-foreground">
-                Change your account password
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => setIsChangingPassword(true)}
-            >
-              Change Password
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Preferences Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="size-5" />
-            Preferences
-          </CardTitle>
-          <CardDescription>Customize your experience</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <DollarSign className="size-5 text-muted-foreground" />
-              <div>
-                <p className="font-medium">Currency</p>
-                <p className="text-sm text-muted-foreground">
-                  Set preferred currency
-                </p>
-              </div>
-            </div>
-            <Dialog
-              open={isCurrencyDialogOpen}
-              onOpenChange={setIsCurrencyDialogOpen}
-            >
-              <DialogTrigger asChild>
-                <Button variant="ghost">
-                  <SquarePen className="size-5 text-muted-foreground" />
+                <Button
+                  onClick={handleChangePassword}
+                  disabled={isUpdatingPassword}
+                >
+                  {isUpdatingPassword && (
+                    <Loader2 className="size-4 animate-spin" />
+                  )}
+                  Change Password
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-106.25">
-                <DialogHeader>
-                  <DialogTitle>Edit currency</DialogTitle>
-                  <DialogDescription>
-                    Make changes to your preferred currency. Click save when
-                    you&apos;re done.
-                  </DialogDescription>
-                </DialogHeader>
-                <CurrencyForm
-                  user={user}
-                  onSubmit={handleUpdateCurrency}
-                  onCancel={() => setIsCurrencyDialogOpen(false)}
-                  isLoading={isUpdatingCurrency}
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Delete Account Dialog */}
+          <AlertDialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Account</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete
+                  your account and remove all your data including transactions,
+                  categories, and budgets.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="space-y-2">
+                <Label htmlFor="delete-password">
+                  Enter your password to confirm
+                </Label>
+                <Input
+                  id="delete-password"
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  placeholder="Your password"
                 />
-              </DialogContent>
-            </Dialog>
-          </div>
-          <Separator />
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Bell className="size-5 text-muted-foreground" />
-              <div>
-                <p className="font-medium">Notifications</p>
-                <p className="text-sm text-muted-foreground">
-                  Email alerts and reminders
-                </p>
               </div>
-            </div>
-            <Switch id="notifications" className="mx-2" />
-          </div>
-          <Separator />
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Palette className="size-5 text-muted-foreground" />
-              <div>
-                <p className="font-medium">Theme</p>
-                <p className="text-sm text-muted-foreground">
-                  Customize the app appearance
-                </p>
-              </div>
-            </div>
-            {/* <Badge variant="secondary">Coming Soon</Badge> */}
-            <div className="px-2.5">
-              <ThemeButton />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-      {/* Data Section */}
-      {user && user.role === "admin" && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Download className="size-5" />
-              Data
-            </CardTitle>
-            <CardDescription>Export and manage your data</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="font-medium">Export Data</p>
-                <p className="text-sm text-muted-foreground">
-                  Download all your transactions, categories, and budgets
-                </p>
-              </div>
-              <Button variant="outline" asChild>
-                <Link href="/settings/export">
-                  <Download className="size-4" />
-                  Export
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setDeletePassword("")}>
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeleteAccount}
+                  className="bg-destructive text-white hover:bg-destructive/90"
+                  disabled={isDeletingAccount}
+                >
+                  {isDeletingAccount ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    "Delete Account"
+                  )}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      ) : (
+        <LoadingIndicator />
       )}
-
-      {/* Danger Zone */}
-      <Card className="border-destructive/50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-destructive">
-            <Trash2 className="size-5" />
-            Danger Zone
-          </CardTitle>
-          <CardDescription>
-            Irreversible actions that affect your account
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="font-medium">Sign Out</p>
-              <p className="text-sm text-muted-foreground">
-                Sign out from this device
-              </p>
-            </div>
-            <Button variant="outline" onClick={() => logout()}>
-              <LogOut className="size-4" />
-              Sign Out
-            </Button>
-          </div>
-          <Separator />
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="font-medium text-destructive">Delete Account</p>
-              <p className="text-sm text-muted-foreground">
-                Permanently delete your account and all data
-              </p>
-            </div>
-            <Button
-              variant="destructive"
-              onClick={() => setIsDeleteDialogOpen(true)}
-            >
-              <Trash2 className="size-4" />
-              Delete Account
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Change Password Dialog */}
-      <Dialog open={isChangingPassword} onOpenChange={setIsChangingPassword}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Change Password</DialogTitle>
-            <DialogDescription>
-              Enter your current password and choose a new one
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="current-password">Current Password</Label>
-              <Input
-                id="current-password"
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="new-password">New Password</Label>
-              <Input
-                id="new-password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm New Password</Label>
-              <Input
-                id="confirm-password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsChangingPassword(false);
-                setCurrentPassword("");
-                setNewPassword("");
-                setConfirmPassword("");
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleChangePassword}
-              disabled={isUpdatingPassword}
-            >
-              {isUpdatingPassword && (
-                <Loader2 className="size-4 animate-spin" />
-              )}
-              Change Password
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Account Dialog */}
-      <AlertDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Account</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your
-              account and remove all your data including transactions,
-              categories, and budgets.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="space-y-2">
-            <Label htmlFor="delete-password">
-              Enter your password to confirm
-            </Label>
-            <Input
-              id="delete-password"
-              type="password"
-              value={deletePassword}
-              onChange={(e) => setDeletePassword(e.target.value)}
-              placeholder="Your password"
-            />
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeletePassword("")}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteAccount}
-              className="bg-destructive text-white hover:bg-destructive/90"
-              disabled={isDeletingAccount}
-            >
-              {isDeletingAccount ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                "Delete Account"
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  );
-}
-
-function Badge({
-  children,
-  variant,
-}: {
-  children: React.ReactNode;
-  variant: string;
-}) {
-  return (
-    <span
-      className={`px-2 py-1 text-xs rounded-full ${
-        variant === "secondary" ? "bg-muted text-muted-foreground" : ""
-      }`}
-    >
-      {children}
-    </span>
+    </>
   );
 }

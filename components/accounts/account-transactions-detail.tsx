@@ -10,14 +10,15 @@ import {
   ArrowDown,
   ArrowLeft,
   ArrowUp,
-  BadgeCheck,
-  ChevronLeft,
   Coins,
-  TrendingDown,
-  TrendingUp,
+  CreditCard,
+  Banknote,
+  PiggyBank,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { convertAndFormat, formatCurrency } from "@/lib/utils";
+import { convertAndFormat } from "@/lib/utils";
+import Link from "next/link";
+import { useCategories } from "@/hooks/use-categories";
 
 interface AccountTransactionsDetailsProps {
   id: string;
@@ -30,6 +31,7 @@ export default function AccountTransactionsDetails({
   const { user } = useAuth();
   const { data: rate } = useRates();
   const { data: payload } = useAccountTransactions(id);
+  const { data: categories } = useCategories();
 
   const cashIn =
     payload?.transactions.reduce((sum, t) => {
@@ -48,10 +50,13 @@ export default function AccountTransactionsDetails({
     }, 0) || 0;
 
   const balance = cashIn - cashOut;
+  const Icon = payload?.account.type
+    ? iconMap[payload.account.type]
+    : CreditCard;
 
   return (
     <div className="px-3 md:px-6 lg:px-8 py-2 md:py-6">
-      {rate && payload && user ? (
+      {rate && payload && categories && user ? (
         <div className="space-y-3 md:space-y-6">
           <div className="flex space-x-3 items-center">
             <div className="pt-0.5">
@@ -61,10 +66,10 @@ export default function AccountTransactionsDetails({
               />
             </div>
             <h1 className="text-2xl font-medium">
-              {payload.account.name} account
+              {payload.account.name} Account
             </h1>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-4">
             <AccountCard
               account={payload.account}
               rate={rate}
@@ -80,12 +85,12 @@ export default function AccountTransactionsDetails({
                   Get a quick overview of your account balance
                 </p>
               </div>
-              <div className="flex gap-4 justify-between px-2">
+              <div className="flex gap-2 justify-between px-1">
                 <div className="flex items-center gap-2">
-                  <div className="hidden md:flex p-2 bg-green-500/10 rounded-full text-green-500">
+                  <div className="flex p-2 bg-green-500/10 rounded-full text-green-500">
                     <ArrowUp className="size-4" />
                   </div>
-                  <h3 className="text-base md:text-xl font-bold text-green-600">
+                  <h3 className="text-xl font-bold text-green-600">
                     {convertAndFormat(
                       cashIn,
                       payload.account.currency,
@@ -93,25 +98,22 @@ export default function AccountTransactionsDetails({
                       rate,
                     )}
                   </h3>
-                  
                 </div>
-                <span className="md:hidden text-muted-foreground">|</span>
                 <div className="flex items-center gap-2">
-                  <div className="hidden md:flex p-2 bg-red-500/10 rounded-full text-destructive">
+                  <div className="flex p-2 bg-red-500/10 rounded-full text-destructive">
                     <ArrowDown className="size-4" />
                   </div>
-                  <h3 className="text-base md:text-xl font-bold text-destructive">
+                  <h3 className="text-xl font-bold text-destructive">
                     {convertAndFormat(
                       cashOut,
                       payload.account.currency,
                       user.currency,
                       rate,
                     )}
-                  </h3>                 
-                </div>                
-                <span className="md:hidden text-muted-foreground">|</span>
+                  </h3>
+                </div>
                 <div className="flex items-center gap-2">
-                  <div className="hidden md:flex items-center gap-2">
+                  <div className="flex items-center gap-2">
                     {balance >= 0 ? (
                       <div className="p-2 bg-green-500/10 rounded-full text-green-500">
                         <Coins className="size-4" />
@@ -123,7 +125,7 @@ export default function AccountTransactionsDetails({
                     )}
                   </div>
                   <h3
-                    className={`text-base md:text-xl font-bold ${
+                    className={`text-xl font-bold ${
                       balance >= 0 ? "text-green-600" : "text-destructive"
                     }`}
                   >
@@ -138,15 +140,76 @@ export default function AccountTransactionsDetails({
               </div>
             </div>
           </div>
+          <div className="flex md:hidden flex-col w-full max-w-md space-y-2 py-3 px-4 bg-card rounded-xl border shadow-sm ">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-full text-primary">
+                  <Icon className="size-6" />
+                </div>
+                <div className="flex flex-col">
+                  <Link href={`/accounts/${payload.account.id}`}>
+                    <p className="text-lg font-medium">
+                      {payload.account.name}
+                    </p>
+                  </Link>
+                  <div className="flex space-x-1 text-sm text-muted-foreground ">
+                    <span>{payload.account.shortCode.toUpperCase()}</span>
+                    <span>•</span>
+                    <span>{payload.account.currency.toUpperCase()}</span>
+                    <span>•</span>
+                    <span>{payload.account.type.toUpperCase()}</span>
+                    <span>•</span>
+                    <span>
+                      {payload.account.showInReports
+                        ? "Included"
+                        : "Not included"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-between">
+              <h3 className="text-base md:text-xl font-bold text-green-600">
+                {convertAndFormat(
+                  cashIn,
+                  payload.account.currency,
+                  user.currency,
+                  rate,
+                )}
+              </h3>
+              <span className="text-muted-foreground">|</span>
+              <h3 className="text-base md:text-xl font-bold text-destructive">
+                {convertAndFormat(
+                  cashOut,
+                  payload.account.currency,
+                  user.currency,
+                  rate,
+                )}
+              </h3>
+              <span className="text-muted-foreground">|</span>
+              <h3
+                className={`text-base md:text-xl font-bold ${
+                  balance >= 0 ? "text-green-600" : "text-destructive"
+                }`}
+              >
+                {convertAndFormat(
+                  balance,
+                  payload.account.currency,
+                  user.currency,
+                  rate,
+                )}
+              </h3>
+            </div>
+          </div>
           <div className="flex flex-col space-y-2">
             <div className="md:py-1 md:border md:px-2 rounded-md">
               <p className="text-lg font-medium md:py-1">
                 Account Transactions
               </p>
             </div>
-
             <TransactionsList
               transactions={payload.transactions}
+              categories={categories}
               rate={rate}
               user={user}
             />
@@ -158,3 +221,9 @@ export default function AccountTransactionsDetails({
     </div>
   );
 }
+
+const iconMap = {
+  bank: CreditCard,
+  cash: Banknote,
+  savings: PiggyBank,
+};

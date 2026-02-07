@@ -31,6 +31,7 @@ import { UserResponse } from "@/lib/models/user";
 import { useRates } from "@/hooks/use-rates";
 import { RateResponse } from "@/lib/models/summary";
 import Link from "next/link";
+import { CategoryResponse } from "@/lib/models/category";
 
 export default function TransactionsPage() {
   const { user } = useAuth();
@@ -99,6 +100,7 @@ export default function TransactionsPage() {
           <TransactionsFilter
             transactions={transactions}
             accounts={accounts}
+            categories={categories}
             rate={rate}
             user={user}
           />
@@ -113,19 +115,19 @@ export default function TransactionsPage() {
 interface TransactionsFilterProps {
   transactions: TransactionResponse[];
   accounts: AccountResponse[];
+  categories: CategoryResponse[];
   rate: RateResponse;
   user: UserResponse;
 }
 function TransactionsFilter({
   transactions,
   accounts,
+  categories,
   rate,
   user,
 }: TransactionsFilterProps) {
-  // 1. Set current month/year as default state
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  // 2. Navigation handlers
   const handlePrevMonth = () => {
     setCurrentDate(
       (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1),
@@ -138,7 +140,6 @@ function TransactionsFilter({
     );
   };
 
-  // 3. Filter transactions for the selected month/year
   const filteredTransactions = useMemo(() => {
     return transactions.filter((tx) => {
       const txDate = new Date(tx.date);
@@ -150,7 +151,6 @@ function TransactionsFilter({
     });
   }, [transactions, currentDate]);
 
-  // Format month label (e.g., "January 2026")
   const monthLabel = currentDate.toLocaleString("default", {
     month: "long",
     year: "numeric",
@@ -174,6 +174,7 @@ function TransactionsFilter({
           </div>
           <TransactionsList
             transactions={filteredTransactions}
+            categories={categories}
             rate={rate}
             user={user}
           />

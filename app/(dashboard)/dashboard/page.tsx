@@ -16,7 +16,6 @@ import {
   TrendingUp,
   ArrowDown,
   ArrowUp,
-  DollarSign,
   CircleDollarSign,
 } from "lucide-react";
 import Link from "next/link";

@@ -9,7 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { CurrencyFormValues, currencySchema } from "@/lib/models/summary";
@@ -17,7 +16,7 @@ import { Loader2 } from "lucide-react";
 import { UserResponse } from "@/lib/models/user";
 
 type CurrencyFormProps = {
-  user: UserResponse | null;
+  user: UserResponse;
   onSubmit: (data: CurrencyFormValues) => void;
   onCancel: () => void;
   isLoading: boolean;
@@ -32,7 +31,7 @@ const CurrencyForm = ({
   const form = useForm<CurrencyFormValues>({
     resolver: zodResolver(currencySchema),
     defaultValues: {
-      currency: user?.currency || "usd",
+      currency: user.currency || "usd",
     },
   });
 

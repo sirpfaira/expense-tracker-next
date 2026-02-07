@@ -13,7 +13,7 @@ export default function HomePage() {
               <Wallet className="w-4 h-4 text-primary-foreground" />
             </div>
             <span className="font-semibold text-foreground">
-              Expense Tracker
+              Kai Expense Tracker
             </span>
           </div>
           <nav className="flex items-center gap-4">
@@ -100,7 +100,7 @@ export default function HomePage() {
             <div className="flex items-center gap-2">
               <Wallet className="w-4 h-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">
-                Expense Tracker
+                Kai Expense Tracker
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
