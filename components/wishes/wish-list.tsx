@@ -24,7 +24,12 @@ import { WishForm } from "./wish-form";
 import { WishResponse, WishFormValues } from "@/lib/models/wish";
 import { useUpdateWish, useDeleteWish } from "@/hooks/use-wishes";
 import { toast } from "sonner";
-import { convertAmount, convertAndFormat, formatDate } from "@/lib/utils";
+import {
+  convertAmount,
+  convertAndFormat,
+  formatCurrency,
+  formatDate,
+} from "@/lib/utils";
 import { RateResponse } from "@/lib/models/summary";
 import { Button } from "@/components/ui/button";
 import { UserResponse } from "@/lib/models/user";
@@ -62,7 +67,10 @@ export function WishList({ wishes, accounts, rate, user }: WishesListProps) {
       .filter((t) => t.fulfilled === false)
       .sort((a, b) => b.priority - a.priority)
       .map((project) => {
-        const allocation = Math.min(project.amount, savings);
+        const allocation = Math.min(
+          convertAmount(project.amount, project.currency, user.currency, rate),
+          savings,
+        );
         savings -= allocation;
 
         return {
@@ -126,7 +134,7 @@ export function WishList({ wishes, accounts, rate, user }: WishesListProps) {
         </div>
       ) : (
         <Tabs defaultValue="pending" className="">
-         <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
             <TabsTrigger value="pending">Pending</TabsTrigger>
             <TabsTrigger value="fulfilled">Fulfilled</TabsTrigger>
           </TabsList>
@@ -275,14 +283,7 @@ export function WishCard({
         </div>
         <Progress value={progress} className="h-2" />
         <div className="flex justify-between text-sm font-medium">
-          <span>
-            {convertAndFormat(
-              wish.allocation,
-              wish.currency,
-              user.currency,
-              rate,
-            )}
-          </span>
+          <span>{formatCurrency(wish.allocation, user.currency)}</span>
           <span className="text-muted-foreground">
             of{" "}
             {convertAndFormat(wish.amount, wish.currency, user.currency, rate)}
