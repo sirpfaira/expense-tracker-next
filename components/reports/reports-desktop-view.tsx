@@ -159,7 +159,8 @@ export default function ReportsDesktopView({
           user.currency,
           rate,
         );
-      } else {
+      }
+      if (t.type === "expense") {
         monthlyTotals[monthKey].expenses += convertAmount(
           t.amount,
           t.currency,
@@ -373,7 +374,7 @@ export default function ReportsDesktopView({
                       tick={{ fontSize: 12 }}
                       tickLine={false}
                       axisLine={false}
-                      tickFormatter={(v) => `$${v}`}
+                      tickFormatter={(v) => `${v}`}
                     />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Bar
