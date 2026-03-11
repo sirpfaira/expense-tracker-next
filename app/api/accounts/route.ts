@@ -141,7 +141,7 @@ export async function PATCH(request: NextRequest) {
         currency: toCurrency.currency as AccountCurrency,
         category: "trf-transfer-in",
         amount: Number(toAmount.toFixed(2)),
-        description: "Inter account transfer",
+        description: `From ${data.from}`,
         date: new Date(data.date),
       },
       {
@@ -151,7 +151,7 @@ export async function PATCH(request: NextRequest) {
         currency: data.currency as AccountCurrency,
         category: "trf-transfer-out",
         amount: data.amount,
-        description: "Inter account transfer",
+        description: `To ${data.to}`,
         date: new Date(data.date),
       },
     ];
@@ -163,12 +163,12 @@ export async function PATCH(request: NextRequest) {
       { status: 201 },
     );
   } catch (error) {
-    console.error("Create account error:", error);
+    console.error("Account transfer error:", error);
     if (error instanceof z.ZodError) {
       return new NextResponse(JSON.stringify(error.issues), { status: 422 });
     }
     return NextResponse.json(
-      { error: "Failed to create account" },
+      { error: "Failed to create account transfer" },
       { status: 500 },
     );
   }
